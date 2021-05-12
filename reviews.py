@@ -7,7 +7,7 @@ from dateutil import parser as dateparser
 from numpy import unicode
 from selectorlib import Extractor
 
-pages = 200
+pages = 2
 
 # This data was created by using the curl method explained above
 headers_list = [
