@@ -7,7 +7,7 @@ from dateutil import parser as dateparser
 from numpy import unicode
 from selectorlib import Extractor
 
-pages = 2
+pages = 40
 
 # This data was created by using the curl method explained above
 headers_list = [
@@ -99,7 +99,7 @@ def scrape(url2):
 
 # product_data = []
 with open("urls.txt", 'r') as urllist, open('data.csv', 'w', encoding='utf-8') as outfile,\
-     open('gpt2training.txt', 'w', encoding='utf-8') as gptoutfile:
+     open('gpt3training.txt', 'w', encoding='utf-8') as gptoutfile:
     writer = csv.DictWriter(outfile,
                             fieldnames=["title", "content", "date", "variant", "images", "verified", "author",
                                         "rating",

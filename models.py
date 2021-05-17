@@ -261,7 +261,7 @@ plt.close()
 
 # TRENDLINE
 plt.grid(False)
-xdate = plotDfTrendline.date
+xdate = plotDfTrendline.date.apply(lambda x: x.strftime('%Y-%m-%d'))
 y = plotDfTrendline.score
 plt.plot(xdate, y)  # plots date sentiment graph
 x2 = mdates.date2num(xdate)  # for trendline turn into datetime object
@@ -269,18 +269,18 @@ z = np.polyfit(x2, y, 1)
 slope = (z[0])
 p = np.poly1d(z)
 plt.plot(xdate, p(x2), 'r--')  # add trendline to plot
-json_trendline_regression = json.dumps([{'date': date, 'score': score} for date, score in zip(xdate, p(x2))], default=str)
 plt.title('Product Sentiment Trend Over Time', fontsize=20, fontweight='bold')
 plt.xlabel('Time', fontsize=20, fontweight='bold')
 plt.yticks([-1, 0, 1], [":(", ":|", ":)"], fontsize=20, fontweight='bold')
 plt.xticks(fontsize=20)
 plt.savefig('plot3.png')
 plt.close()
+json_trendline_regression = json.dumps([{'x': date, 'y': score} for date, score in zip(xdate, p(x2))], default=str)
+json_trendline_regression = json.loads(json_trendline_regression)
 # plt.show()
 
 # STAR TRENDLINE
 plt.grid(False)
-xdate = plotDfTrendline.date
 y = plotDfTrendline.rating
 plt.plot(xdate, y)  # plots date sentiment graph
 x2 = mdates.date2num(xdate)  # for trendline turn into datetime object
@@ -288,12 +288,13 @@ z = np.polyfit(x2, y, 1)
 slope_star = (z[0])
 p = np.poly1d(z)
 plt.plot(xdate, p(x2), 'r--')  # add trendline to plot
-json_trendline_rating_regression = json.dumps([{'date': date, 'rating': rating} for date, rating in zip(xdate, p(x2))], default=str)
 plt.title('Product Star Rating Trend Over Time', fontsize=20, fontweight='bold')
 plt.xlabel('Time', fontsize=20, fontweight='bold')
 plt.xticks(fontsize=20)
 plt.savefig('plot3star.png')
 plt.close()
+json_trendline_rating_regression = json.dumps([{'x': date, 'y': rating} for date, rating in zip(xdate, p(x2))], default=str)
+json_trendline_rating_regression = json.loads(json_trendline_rating_regression)
 # plt.show()
 
 # 1 YEAR TRENDLINE
@@ -302,14 +303,13 @@ one_year_ago_today = base - datetime.timedelta(days=365)
 one_year_ago_df = plotDfTrendline[plotDfTrendline['date'] > one_year_ago_today]
 plt.grid(False)
 y = one_year_ago_df.score
-xdate = one_year_ago_df.date
+xdate = one_year_ago_df.date # xdate here is of type timestamp
 plt.plot(xdate, y)  # plots date sentiment graph
 x2 = mdates.date2num(xdate)  # for trendline turn into datetime object
 z = np.polyfit(x2, y, 1)
 slope_oneyear = (z[0])
 p = np.poly1d(z)
 plt.plot(xdate, p(x2), 'r--')  # add trendline to plot
-json_trendline_regression_one_year = json.dumps([{'date': date, 'score': score} for date, score in zip(xdate, p(x2))], default=str)
 plt.title('Product Sentiment Trend Over 1 Year', fontsize=20, fontweight='bold')
 plt.xlabel('Time', fontsize=20, fontweight='bold')
 plt.yticks([-1, 0, 1], [":(", ":|", ":)"], fontsize=20, fontweight='bold')
@@ -317,7 +317,9 @@ plt.xticks(fontsize=20)
 plt.xlim(one_year_ago_today, base)
 plt.savefig('plot3_oneYear.png')
 plt.close()
-
+date_time_xdate = pd.to_datetime(xdate)
+json_trendline_regression_one_year = json.dumps([{'x': date, 'y': score} for date, score in zip(date_time_xdate, p(x2))], default=str)
+json_trendline_regression_one_year = json.loads(json_trendline_regression_one_year)
 # plt.show()
 
 # SENTIMENT PER VARIANT
@@ -548,13 +550,15 @@ pdftext.multi_cell(200, 5, txt='www.letspondr.com', align='C')
 # save the pdf with name .pdf
 pdftext.output('Report.pdf')
 
-plotDfTrendline['str_date'] = plotDfTrendline['date'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))  #  turing date time object to strings to appear correct in json
-result = plotDfTrendline[['str_date', 'score']].to_json(orient="records")
+plotDfTrendline['y'] = plotDfTrendline['score']
+plotDfTrendline['x'] = plotDfTrendline['date'].apply(lambda x: x.strftime('%Y-%m-%d'))  #  turing date time object to strings to appear correct in json
+result = plotDfTrendline[['x', 'y']].to_json(orient="records")
 parsed = json.loads(result)
 json.dumps(parsed, indent=4)
 json_date_score = parsed
 
-result = plotDfTrendline[['str_date', 'rating']].to_json(orient="records")
+plotDfTrendline['y'] = plotDfTrendline['rating']
+result = plotDfTrendline[['x', 'y']].to_json(orient="records")
 parsed = json.loads(result)
 json.dumps(parsed, indent=4)
 json_date_rating = parsed
@@ -586,15 +590,16 @@ json.dumps(parsed, indent=4)
 json_score_distribution = parsed
 print(json_score_distribution)
 
-one_year_ago_df['str_date'] = one_year_ago_df['date'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))  #  turing date time object to strings to appear correct in json
-result = one_year_ago_df[['str_date', 'score']].to_json(orient="records")
+one_year_ago_df['x'] = one_year_ago_df['date'].apply(lambda x: x.strftime('%Y-%m-%d'))#  turing date time object to strings to appear correct in json
+one_year_ago_df['y'] = one_year_ago_df['score']
+result = one_year_ago_df[['x', 'y']].to_json(orient="records")
 parsed = json.loads(result)
 json.dumps(parsed, indent=4)
 json_date_one_year = parsed
 
 package = {
     "data": {
-        "product_id": "o7K0Atg791MtbGwkGFer",
+        "product_id": "Cvw8d65PQTykN2i3YHdE",
         "company_id": "y4X15yERWulGWueGa1Xc",
         "product_name": df.iloc[1, 8],
         "1": {
@@ -610,7 +615,7 @@ package = {
         "3": {
             "title": "Distributions of sentiment",
             "description": "This is the plot of distributions of the sentiment rating of this product ",
-            "distributions_of_senntiment": json_star_distribution
+            "distributions_of_sentiment": json_star_distribution
 
         },
         "4": {
@@ -655,5 +660,8 @@ package = {
         "word_cloud": "null"
     }
 }
+
+with open('package.json', 'w') as json_file:
+    json.dump(package, json_file)
 
 print(package)
