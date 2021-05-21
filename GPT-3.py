@@ -36,7 +36,7 @@ time.sleep(10)
 response = openai.Answer.create(
     search_model="ada",
     model="curie",
-    question="What would be a cheaper alternative?",
+    question="What could work better on this coffee maker?",
     file=upload['id'],
     examples_context="In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest",
     examples=[["What is human life expectancy in the United States?", "78 years."],
