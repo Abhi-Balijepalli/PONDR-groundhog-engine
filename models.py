@@ -1,6 +1,5 @@
 import csv
 from datetime import date
-import numpy
 import numpy as np
 import operator
 import matplotlib.pyplot as plt
@@ -14,6 +13,13 @@ import matplotlib.dates as mdates
 from fpdf import FPDF
 import datetime
 import json
+import statistics
+import torch
+from numba import cuda
+import openai
+from jsonlines import jsonlines
+
+torch.cuda.empty_cache()
 
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)  # more matplotlib stuff
@@ -23,7 +29,40 @@ candidate_labels = ['price', 'durable', 'easy', 'quality']
 empty_list = []
 whole_review_sentiment = []
 whole_reviews = []
+whole_review_date = []
+whole_review_category = []
 mean_sentiment = 0
+
+print(
+    '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 0 Unsupervised Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+
+with open('data.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    next(csv_reader, None)  # skips headers
+    for row in csv_reader:  # going through reviews data
+        if row != empty_list:  # makes sure there isn't and empty row
+            whole_reviews.append(str(row[1]))  # adding the whole review to the list
+            whole_review_date.append(str(row[2]))  # adding that review date to the list
+
+#  whole_reviews = np.array(whole_reviews)
+print(type(whole_reviews))
+print(whole_reviews)
+whole_reviews_top2 = whole_reviews * 10
+# running unsupervised model and generating word cloud
+unsupervised_model = Top2Vec(whole_reviews_top2, min_count=10, embedding_model='universal-sentence-encoder')
+# runs model and gets topics from sentence list
+topic_words, word_scores, topic_nums = unsupervised_model.get_topics(unsupervised_model.get_num_topics())
+# gets the topics that were found in the line above
+candidate_labels = candidate_labels + (topic_words[0, 0:3]).tolist() # change number here to include more unsupervised topics
+print(candidate_labels)
+
+device = cuda.get_current_device()  # getting current device (GPU)
+device.reset()  # resetting to be able to reallocate memory
+
+# importing models
+classifier = pipeline("zero-shot-classification",
+                      model="facebook/bart-large-mnli", device=0)
+analyzer = SentimentIntensityAnalyzer()
 
 # making topic dictionary for later use in zero-shot
 sen_topic_dict = {}
@@ -32,12 +71,8 @@ for label in candidate_labels:
 
 print(sen_topic_dict)
 
-# importing models
-classifier = pipeline("zero-shot-classification",
-                      model="facebook/bart-large-mnli", device=0)
-analyzer = SentimentIntensityAnalyzer()
-
-print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+print(
+    '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
 # running model 1, topic analysis
 with open('data.csv') as csv_file:
@@ -46,17 +81,24 @@ with open('data.csv') as csv_file:
     for row in csv_reader:  # going through reviews data
         if row != empty_list:  # makes sure there isn't and empty row
             whole_review_sentiment.append(analyzer.polarity_scores(row[1])['compound'])
-            whole_reviews.append(row[1])
+            whole_classified_dict = classifier(row[1],
+                                               candidate_labels)  # runs zero-shot classifier models on whole review
+            topic_categories = whole_classified_dict.get('labels')  # gets the labels (categories) from dictionary
+            whole_topic_scores = whole_classified_dict.get(
+                'scores')  # gets the scores from the dictionary produced by running the model again
+            whole_max_score_index, whole_review_max_value = max(enumerate(whole_topic_scores), key=operator.itemgetter(
+                1))  # finds the max score of the model output scores
+            print("whole review topic " + str(topic_categories[whole_max_score_index]))
+            whole_review_category.append(topic_categories[whole_max_score_index])
             sequence_to_classify = nltk.tokenize.sent_tokenize(row[1])
             for sen in sequence_to_classify:  # going through individual review sentences
                 classified_dict = classifier(sen, candidate_labels)  # runs zero-shot classifier models on sentence
                 topic_scores = classified_dict.get(
                     'scores')  # gets the scores from the dictionary produced by running the model again
-                topic_categories = classified_dict.get('labels')  # gets the labels (categories) from dictionary
                 max_score_index, value = max(enumerate(topic_scores), key=operator.itemgetter(
                     1))  # finds the max score of the model output scores
                 print(topic_categories[max_score_index])
-                sen_topic_dict[topic_categories[max_score_index]][0].append(sen)  # adds values from csv to dicionary
+                sen_topic_dict[topic_categories[max_score_index]][0].append(sen)  # adds values from csv to dictionary
                 sen_topic_dict[topic_categories[max_score_index]][2].append(row[2])  # date
                 sen_topic_dict[topic_categories[max_score_index]][3].append(row[3])  # variant
                 sen_topic_dict[topic_categories[max_score_index]][4].append(row[4])  # images
@@ -66,7 +108,8 @@ with open('data.csv') as csv_file:
                 sen_topic_dict[topic_categories[max_score_index]][8].append(row[8])  # product
                 sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
 
-print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+print(
+    '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
 for key, dict_list_list in sen_topic_dict.items():  # loops through items in the main sentence dictionary
     sen_list = dict_list_list[0]  # getting sentences from 2D array
@@ -76,7 +119,6 @@ for key, dict_list_list in sen_topic_dict.items():  # loops through items in the
         sen_topic_dict[key][1].append(sent_score)  # adds sentient score to dictionary array
 
 print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Plotting @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-import statistics
 
 # List for DFs
 dfs = []
@@ -101,6 +143,10 @@ for key in sen_topic_dict.keys():
 # Combine DFs
 df = pd.concat(dfs, ignore_index=True)
 df['date'] = pd.to_datetime(df['date'], format='%d %b %Y')
+
+# Rounding all values
+
+df['score'] = df['score'].round(decimals=3)
 
 
 def plot_normal(x_range, mu=0, sigma=1, cdf=False, **kwargs):
@@ -155,7 +201,7 @@ print("sentiment mean: " + str(normalized_mean_sentiment))
 print("sentiment stdv: " + str(normalized_stdv_sentiment))
 
 # making sentiment per category data for plotting
-plotDfCategory = df.groupby(['category'], as_index=False).mean()
+plotDfCategory = df.groupby(['category'], as_index=False).mean().round(3)
 plotDfCategory.score / len(df.score)
 max_category_index, max_cat_value = max(enumerate(plotDfCategory.score), key=operator.itemgetter(1))
 min_category_index, min_cat_value = min(enumerate(plotDfCategory.score), key=operator.itemgetter(1))
@@ -167,12 +213,12 @@ distributionScoreDf = df.groupby(['star_scale_sentiments'], as_index=False).coun
 distributionScoreDf.add_suffix('_Count').reset_index()
 
 # making trend data for plotting
-plotDfTrendline = df.groupby(['date'], as_index=False).mean()  # groups by date and takes the mean of the scores
+plotDfTrendline = df.groupby(['date'], as_index=False).mean().round(3)  # groups by date and takes the mean of the scores
 df = df.sort_values('date')
 
 # making df for plotting variance and sentiment
-plot_df_variant = df.groupby(['variant'], as_index=False).mean()
-plot_df_variant.add_suffix('_Mean').reset_index()   # converts groupby object back to dataframe
+plot_df_variant = df.groupby(['variant'], as_index=False).mean().round(3)
+plot_df_variant.add_suffix('_Mean').reset_index()  # converts groupby object back to dataframe
 plot_df_variant_star = plot_df_variant
 
 if len(plot_df_variant.variant) > 10:  # if there are more then 10 variants, concatenates the lists
@@ -197,13 +243,6 @@ min_variant_star_index, min_variant_star_value = min(enumerate(plot_df_variant_s
 
 print(plot_df_variant)
 print(plot_df_variant_star)
-
-# running unsupervised model and generating word cloud
-unsupervised_model = Top2Vec(df['sentence'].tolist(), min_count=10, embedding_model='universal-sentence-encoder')
-# runs model and gets topics from sentence list
-topic_words, word_scores, topic_nums = unsupervised_model.get_topics(unsupervised_model.get_num_topics())
-# gets the topics that were found in the line above
-topic_words = numpy.array(topic_words)
 
 # finding net promoter score
 promoters = []
@@ -275,7 +314,7 @@ plt.yticks([-1, 0, 1], [":(", ":|", ":)"], fontsize=20, fontweight='bold')
 plt.xticks(fontsize=20)
 plt.savefig('plot3.png')
 plt.close()
-json_trendline_regression = json.dumps([{'x': date, 'y': score} for date, score in zip(xdate, p(x2))], default=str)
+json_trendline_regression = json.dumps([{'x': date, 'y': score} for date, score in zip(xdate, p(x2).round(3))], default=str)
 json_trendline_regression = json.loads(json_trendline_regression)
 # plt.show()
 
@@ -293,7 +332,8 @@ plt.xlabel('Time', fontsize=20, fontweight='bold')
 plt.xticks(fontsize=20)
 plt.savefig('plot3star.png')
 plt.close()
-json_trendline_rating_regression = json.dumps([{'x': date, 'y': rating} for date, rating in zip(xdate, p(x2))], default=str)
+json_trendline_rating_regression = json.dumps([{'x': date, 'y': rating} for date, rating in zip(xdate, p(x2).round(3))],
+                                              default=str)
 json_trendline_rating_regression = json.loads(json_trendline_rating_regression)
 # plt.show()
 
@@ -303,7 +343,7 @@ one_year_ago_today = base - datetime.timedelta(days=365)
 one_year_ago_df = plotDfTrendline[plotDfTrendline['date'] > one_year_ago_today]
 plt.grid(False)
 y = one_year_ago_df.score
-xdate = one_year_ago_df.date # xdate here is of type timestamp
+xdate = one_year_ago_df.date  # xdate here is of type timestamp
 plt.plot(xdate, y)  # plots date sentiment graph
 x2 = mdates.date2num(xdate)  # for trendline turn into datetime object
 z = np.polyfit(x2, y, 1)
@@ -318,7 +358,8 @@ plt.xlim(one_year_ago_today, base)
 plt.savefig('plot3_oneYear.png')
 plt.close()
 date_time_xdate = pd.to_datetime(xdate)
-json_trendline_regression_one_year = json.dumps([{'x': date, 'y': score} for date, score in zip(date_time_xdate, p(x2))], default=str)
+json_trendline_regression_one_year = json.dumps(
+    [{'x': date, 'y': score} for date, score in zip(date_time_xdate, p(x2).round(3))], default=str)
 json_trendline_regression_one_year = json.loads(json_trendline_regression_one_year)
 # plt.show()
 
@@ -551,7 +592,8 @@ pdftext.multi_cell(200, 5, txt='www.letspondr.com', align='C')
 pdftext.output('Report.pdf')
 
 plotDfTrendline['y'] = plotDfTrendline['score']
-plotDfTrendline['x'] = plotDfTrendline['date'].apply(lambda x: x.strftime('%Y-%m-%d'))  #  turing date time object to strings to appear correct in json
+plotDfTrendline['x'] = plotDfTrendline['date'].apply(
+    lambda x: x.strftime('%Y-%m-%d'))  # turing date time object to strings to appear correct in json
 result = plotDfTrendline[['x', 'y']].to_json(orient="records")
 parsed = json.loads(result)
 json.dumps(parsed, indent=4)
@@ -590,12 +632,50 @@ json.dumps(parsed, indent=4)
 json_score_distribution = parsed
 print(json_score_distribution)
 
-one_year_ago_df['x'] = one_year_ago_df['date'].apply(lambda x: x.strftime('%Y-%m-%d'))#  turing date time object to strings to appear correct in json
+one_year_ago_df['x'] = one_year_ago_df['date'].apply(
+    lambda x: x.strftime('%Y-%m-%d'))  # turing date time object to strings to appear correct in json
 one_year_ago_df['y'] = one_year_ago_df['score']
 result = one_year_ago_df[['x', 'y']].to_json(orient="records")
 parsed = json.loads(result)
 json.dumps(parsed, indent=4)
 json_date_one_year = parsed
+
+full_cat_json = {}
+whole_review_sentiment = [round(elem, 3) for elem in whole_review_sentiment]
+
+for label in candidate_labels:
+    full_cat_json[label] = []
+for i in range(0, len(whole_reviews)-1):
+    full_cat_json[whole_review_category[i]].append({"date": whole_review_date[i], "score": whole_review_sentiment[i], "review": whole_reviews[i]})
+full_cat_json = json.dumps(full_cat_json, indent=1)
+full_cat_json = json.loads(full_cat_json)
+print("full cat df " + str(type(full_cat_json)))
+
+# Open AI file upload
+
+openai.api_key = ("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")
+
+file_name = "gpt3training.txt"
+
+with open(file_name) as f:
+    mylist = f.read().splitlines()
+
+json_to_upload = json.dumps([{'text': test} for test in mylist], default=str, indent=1)
+json_to_upload = json.loads(json_to_upload)
+print(type(json_to_upload))
+# json_to_upload = json.dumps([{'text': mylist}], default=str, indent=1)
+# json_to_upload = json.loads(json_to_upload)
+
+with jsonlines.open('upload.jsonl', mode='w') as writer:
+    for entry in json_to_upload:
+        writer.write(entry)
+
+upload = openai.File.create(
+    file=open("upload.jsonl"),
+    purpose='answers'
+)
+
+print(upload['id'])
 
 package = {
     "data": {
@@ -644,13 +724,14 @@ package = {
             }
         },
         "summary": {
-            "gpt-3": "gpt-3 summary",
             "nps": "37",
-            "num_of_reviews": str(len(df.score)),
+            "num_of_reviews": str(len(whole_reviews)),
             "topics": (', '.join(topic_words[0:(len(topic_words) - 1), 0])).capitalize() + ', and ' + (
-                                   topic_words[(len(topic_words) - 1), 0]).capitalize(),
-            "date": str(date.today())
+                topic_words[(len(topic_words) - 1), 0]).capitalize(),
+            "date": str(date.today()),
+            "category_data": full_cat_json
         },
+        "gpt3_form_id": upload['id'],
 
         "review_types": {
             "best_review": whole_reviews[max_index],
