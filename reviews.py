@@ -8,47 +8,83 @@ import requests
 from dateutil import parser as dateparser
 from lxml.html import fromstring
 from selectorlib import Extractor
-import multiprocessing.dummy as mp
 
 total_pages_scrapped = 0
+old_randints = [None]  # empty list for now, see end of run_everything() for more
 
 
 def run_everything(all_pages):
-    working_ip = []
-    num_of_loops = int(all_pages / 10)
-    tens = 1
+    global thread  # this is global for joining later
+    global old_randints # including old_randints as global
+    working_ip = []  # list of good ips for all threads
+    num_of_loops = int(all_pages / 10)  # how many loops/ threads are needed
+    tens = 1  # the lower bound of the scrape() method
+    old_randints = old_randints * num_of_loops # making a list of size num_of_loops for proxy_index storage
 
-    def get_proxies():
+    def get_proxies():  # getting proxies by scrapping the site for free
         url3 = 'https://free-proxy-list.net/'
         response = requests.get(url3)
         parser = fromstring(response.text)
-        print(parser.xpath('//tbody/tr'))
+        # print(parser.xpath('//tbody/tr'))
         proxies = set()
-        for i in parser.xpath('//tbody/tr')[:50]:
-            print(i.xpath('.//td[7][contains(text(),"yes")]'))
+        for i in parser.xpath('//tbody/tr')[:100]:
+            # print(i.xpath('.//td[7][contains(text(),"yes")]'))
             if i.xpath('.//td[7][contains(text(),"yes")]'):
                 proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
                 proxies.add(proxy)
-                print(proxies)
+                # print(proxies)
+        return proxies
+
+    def get_pro_proxies():  # getting proxies from the paid api
+        proxies = set()
+        url5 = 'http://list.didsoft.com/get?email=tomcs333@gmail.com&pass=9txsme&pid=http3000&showcountry=no'
+        response = requests.get(url5)
+        ip_string = response.text
+        for proxy in ip_string.splitlines():
+            # print(proxy)
+            proxies.add(proxy)
         return proxies
 
     proxies = get_proxies()
     proxy_pool = cycle(proxies)
     url4 = 'https://httpbin.org/ip'
-    print('Finding viable ip address for proxy...')
-    for i in range(1, 5):
-        # Get a proxy from the pool
-        proxy = next(proxy_pool)
-        print("Request #%d" % i)
-        try:
-            response = requests.get(url4, proxies={"http": proxy, "https": proxy})
-            print(response.json())
-            print(proxy)
-            working_ip.append(proxy)
-        except:
-            # Most free proxies will often get connection errors. You will have retry the entire request using another proxy to work.
-            # We will just skip retries as its beyond the scope of this tutorial and we are only downloading a single url
-            print("Skipping. Connnection error")
+    # print('Finding viable ip address for proxy...')
+
+    def find_ip(lower_range,
+                upper_range):  # finds ip in a given range from an ip list generated from get_pro_proxie or get_proxie
+        session = requests.Session()
+        for i in range(lower_range, upper_range):
+            # Get a proxy from the pool
+            proxy = next(proxy_pool)
+            print("Request #%d" % i)
+            try:
+                response = session.get(url4, proxies={"http": proxy, "https": proxy})
+                print(response.json())
+                # print(proxy)
+                working_ip.append(proxy)
+            except:
+                # Most free proxies will often get connection errors. You will have retry the entire request using another proxy to work.
+                # We will just skip retries as its beyond the scope of this tutorial and we are only downloading a single url
+                print("Skipping. Connnection error")
+
+    ip_threads = []  # lists of threads to join
+    ip_thread = Thread(target=find_ip, args=(1, 10))
+    ip_threads.append(ip_thread)
+    ip_thread.start()
+    ip_thread = Thread(target=find_ip, args=(11, 20))
+    ip_threads.append(ip_thread)
+    ip_thread.start()
+    ip_thread = Thread(target=find_ip, args=(21, 30))
+    ip_threads.append(ip_thread)
+    ip_thread.start()
+    ip_thread = Thread(target=find_ip, args=(31, 40))
+    ip_threads.append(ip_thread)
+    ip_thread.start()
+
+    for t in ip_threads:
+        t.join()  # joins all started threads to find working ups
+
+    scrape_threads = []
 
     if all_pages < 10:
         print('@@@@ less then 10 pages @@@@')
@@ -58,26 +94,26 @@ def run_everything(all_pages):
         i = 1
         while i <= num_of_loops:
             time.sleep(1)
-            print("current loop " + str(i))
-            thread = Thread(target=collect_data, args=(tens, i * 10, working_ip))
+            old_randints[i - 1] = random.randint(0, len(working_ip) - 1)
+            # print("current loop " + str(i))
+            thread = Thread(target=collect_data, args=(tens, (i * 10) + 1, working_ip, all_pages, i))
             tens = tens + 10
             i = i + 1
-            thread.daemon = True
+            scrape_threads.append(thread)
             thread.start()
-            thread.join()
-        else:
-            tens = tens + 10
-            Thread(target=collect_data, args=(tens, all_pages, working_ip)).start()
+
+            # fix not 10s bug here!!
+
+        for t in scrape_threads:
+            t.join()
 
 
-def collect_data(lower_page, higher_page, working_ip):
-    pages = higher_page
-
+def collect_data(lower_page, higher_page, working_ip, all_pages, thread_number):
     # This data was created by using the curl method explained above
     headers_list = [
         # Firefox 77 Mac
         {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.5",
             "Referer": "https://www.google.com/",
@@ -87,7 +123,7 @@ def collect_data(lower_page, higher_page, working_ip):
         },
         # Firefox 77 Windows
         {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.5",
             "Accept-Encoding": "gzip, deflate, br",
@@ -101,7 +137,7 @@ def collect_data(lower_page, higher_page, working_ip):
             "Connection": "keep-alive",
             "DNT": "1",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "Sec-Fetch-Site": "none",
             "Sec-Fetch-Mode": "navigate",
@@ -114,7 +150,7 @@ def collect_data(lower_page, higher_page, working_ip):
         {
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "Sec-Fetch-Site": "same-origin",
             "Sec-Fetch-Mode": "navigate",
@@ -129,48 +165,52 @@ def collect_data(lower_page, higher_page, working_ip):
     # Create an Extractor by reading from the YAML file
     e = Extractor.from_yaml_file('selectors.yml')
 
-    def scrape(url2, ip_index):
+    def scrape(url2, ip_index, thread_number):
+        global old_randints
         randint = ip_index
         # Create ordered dict from Headers above
         global headers
         ordered_headers_list = []
+
         for headers in headers_list:
             h = OrderedDict()
             for header, value in headers.items():
                 h[header] = value
             ordered_headers_list.append(h)
+
         for i in range(1, 4):
             # Pick a random browser headers
             headers = random.choice(headers_list)
             # Create a request session
-            r = requests.Session()
-            r.headers = headers
+            site_response = requests.Session()
+            site_response.headers = headers
             # Download the page using requests
-            print("Downloading %s" % url2)
-            print('current proxy ' + working_ip[randint])
+            # print("Downloading %s" % url2)
+            # print('current proxy ' + working_ip[randint])
             stop_count = 0
             r = ''
             while r == '':
                 try:
-                    r = requests.get(url2, headers=headers,
-                                     proxies={"http": working_ip[randint], "https": working_ip[randint]})
+                    r = site_response.get(url2, headers=headers,
+                                          proxies={"http": working_ip[randint], "https": working_ip[randint]})
                     break
                 except:
-                    sleep_time = random.randint(4, 5)
-                    print("Connection refused by the server..")
-                    print("Let me sleep for " + str(sleep_time) + " seconds")
-                    print("ZZzzzz...")
+                    sleep_time = 5
+                    #print("Connection refused by the server..")
+                    #print("Let me sleep for " + str(sleep_time) + " seconds")
+                    #print("ZZzzzz...")
                     time.sleep(sleep_time)
-                    print("Was a nice sleep, now let me continue...")
+                    #print("Was a nice sleep, now let me continue...")
                     stop_count = stop_count + 1
-                    print("stop count " + str(stop_count))
-                    if stop_count > 5:
-                        randint = random.randint(0, len(working_ip) - 1)
-                        print('to many stops, reassigning randint')
+                    #print("stop count " + str(stop_count))
+                    if stop_count > 4:
+                        randint = random.randint(0, len(working_ip) - 1) # try to assign this to the global ip array
+                        old_randints[thread_number-1] = randint
+                        #print('to many stops, reassigning randint')
                         stop_count = 0
                     continue
             # Simple check to check if page was blocked (Usually 503)
-            print(str(r.status_code))
+            #print(str(r.status_code))
             if r.status_code > 500:
                 if "To discuss automated access to Amazon data please contact" in r.text:
                     print("Page %s was blocked by Amazon. Please try using better proxies\n" % url2)
@@ -188,15 +228,15 @@ def collect_data(lower_page, higher_page, working_ip):
                                             "product", "url"], quoting=csv.QUOTE_ALL)
         writer.writeheader()
         for url in urllist.readlines():
-            for i in range(lower_page, pages):
-                new_randint = random.randint(0, len(working_ip) - 1)
-                data = scrape(url.rstrip() + str(i), new_randint)
+            for i in range(lower_page, higher_page):
+                data = scrape(url.rstrip() + str(i),
+                              old_randints[thread_number - 1], thread_number)  # appends the page number to the end of the url
                 # sleep(random.randint(1, 2))
-                print(data)
+                # print(data)
                 while data['reviews'] is None:
-                    print('Amazon blocked so scrapping again')
-                    new_randint = random.randint(0, len(working_ip) - 1)
-                    data = scrape(url.rstrip() + str(i), new_randint)
+                    # print('Amazon blocked so scrapping again')
+                    old_randints[thread_number - 1] = random.randint(0, len(working_ip) - 1)
+                    data = scrape(url.rstrip() + str(i), old_randints[thread_number - 1], thread_number)
                 if data:
                     for r in data['reviews']:
                         r["product"] = data["product_title"]
@@ -220,15 +260,14 @@ def collect_data(lower_page, higher_page, working_ip):
                         writer.writerow(r)
                         gptoutfile.write(r['content'])
                         gptoutfile.write("\n")
-                        print(str(r))
+                        # print(str(r))
                     global total_pages_scrapped
                     total_pages_scrapped = total_pages_scrapped + 1
-                    print("pages scrapped " + str(total_pages_scrapped))
+                    print(str((total_pages_scrapped / all_pages) * 100) + "%")
                     # sleep(random.randint(1, 2))
 
 
 # lower page has to start at 1
-all_pages = 50
 
 if __name__ == '__main__':
-    run_everything(20)
+    run_everything(70)
