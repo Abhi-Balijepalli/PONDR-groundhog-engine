@@ -11,6 +11,8 @@ from selectorlib import Extractor
 
 total_pages_scrapped = 0
 old_randints = [None]  # empty list for now, see end of run_everything() for more
+csv_outfile = []
+txt_outfile = []
 
 
 def run_everything(all_pages):
@@ -25,14 +27,14 @@ def run_everything(all_pages):
         url3 = 'https://free-proxy-list.net/'
         response = requests.get(url3)
         parser = fromstring(response.text)
-        # print(parser.xpath('//tbody/tr'))
+        print(parser.xpath('//tbody/tr'))
         proxies = set()
-        for i in parser.xpath('//tbody/tr')[:100]:
-            # print(i.xpath('.//td[7][contains(text(),"yes")]'))
+        for i in parser.xpath('//tbody/tr')[:150]:
+            print(i.xpath('.//td[7][contains(text(),"yes")]'))
             if i.xpath('.//td[7][contains(text(),"yes")]'):
                 proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
                 proxies.add(proxy)
-                # print(proxies)
+                print(proxies)
         return proxies
 
     def get_pro_proxies():  # getting proxies from the paid api
@@ -41,14 +43,14 @@ def run_everything(all_pages):
         response = requests.get(url5)
         ip_string = response.text
         for proxy in ip_string.splitlines():
-            # print(proxy)
+            print(proxy)
             proxies.add(proxy)
         return proxies
 
     proxies = get_proxies()
     proxy_pool = cycle(proxies)
     url4 = 'https://httpbin.org/ip'
-    # print('Finding viable ip address for proxy...')
+    print('Finding viable ip address for proxy...')
 
     def find_ip(lower_range,
                 upper_range):  # finds ip in a given range from an ip list generated from get_pro_proxie or get_proxie
@@ -60,7 +62,7 @@ def run_everything(all_pages):
             try:
                 response = session.get(url4, proxies={"http": proxy, "https": proxy})
                 print(response.json())
-                # print(proxy)
+                print(proxy)
                 working_ip.append(proxy)
             except:
                 # Most free proxies will often get connection errors. You will have retry the entire request using another proxy to work.
@@ -80,6 +82,9 @@ def run_everything(all_pages):
     ip_thread = Thread(target=find_ip, args=(31, 40))
     ip_threads.append(ip_thread)
     ip_thread.start()
+    ip_thread = Thread(target=find_ip, args=(41, 50))
+    ip_threads.append(ip_thread)
+    ip_thread.start()
 
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
@@ -95,7 +100,7 @@ def run_everything(all_pages):
         while i <= num_of_loops:
             time.sleep(1)
             old_randints[i - 1] = random.randint(0, len(working_ip) - 1)
-            # print("current loop " + str(i))
+            print("current loop " + str(i))
             thread = Thread(target=collect_data, args=(tens, (i * 10) + 1, working_ip, all_pages, i))
             tens = tens + 10
             i = i + 1
@@ -107,6 +112,18 @@ def run_everything(all_pages):
         for t in scrape_threads:
             t.join()
 
+        with open('data.csv', 'w', encoding='utf-8') as outfile, open('gpt3training.txt', 'w',
+                                                                   encoding='utf-8') as gptoutfile:
+            writer = csv.DictWriter(outfile,
+                                fieldnames=["title", "content", "date", "variant", "images", "verified", "author",
+                                            "rating",
+                                            "product", "url"], quoting=csv.QUOTE_ALL)
+
+            for row in csv_outfile:
+                writer.writerow(row)
+
+            for row in txt_outfile:
+                gptoutfile.write(row)
 
 def collect_data(lower_page, higher_page, working_ip, all_pages, thread_number):
     # This data was created by using the curl method explained above
@@ -167,9 +184,12 @@ def collect_data(lower_page, higher_page, working_ip, all_pages, thread_number):
 
     def scrape(url2, ip_index, thread_number):
         global old_randints
+        global headers
+        global csv_outfile
+        global txt_outfile
+
         randint = ip_index
         # Create ordered dict from Headers above
-        global headers
         ordered_headers_list = []
 
         for headers in headers_list:
@@ -185,8 +205,8 @@ def collect_data(lower_page, higher_page, working_ip, all_pages, thread_number):
             site_response = requests.Session()
             site_response.headers = headers
             # Download the page using requests
-            # print("Downloading %s" % url2)
-            # print('current proxy ' + working_ip[randint])
+            print("Downloading %s" % url2)
+            print('current proxy ' + working_ip[randint])
             stop_count = 0
             r = ''
             while r == '':
@@ -196,21 +216,21 @@ def collect_data(lower_page, higher_page, working_ip, all_pages, thread_number):
                     break
                 except:
                     sleep_time = 5
-                    #print("Connection refused by the server..")
-                    #print("Let me sleep for " + str(sleep_time) + " seconds")
-                    #print("ZZzzzz...")
+                    print("Connection refused by the server..")
+                    print("Let me sleep for " + str(sleep_time) + " seconds")
+                    print("ZZzzzz...")
                     time.sleep(sleep_time)
-                    #print("Was a nice sleep, now let me continue...")
+                    print("Was a nice sleep, now let me continue...")
                     stop_count = stop_count + 1
-                    #print("stop count " + str(stop_count))
+                    print("stop count " + str(stop_count))
                     if stop_count > 4:
                         randint = random.randint(0, len(working_ip) - 1) # try to assign this to the global ip array
                         old_randints[thread_number-1] = randint
-                        #print('to many stops, reassigning randint')
+                        print('to many stops, reassigning randint')
                         stop_count = 0
                     continue
             # Simple check to check if page was blocked (Usually 503)
-            #print(str(r.status_code))
+            print(str(r.status_code))
             if r.status_code > 500:
                 if "To discuss automated access to Amazon data please contact" in r.text:
                     print("Page %s was blocked by Amazon. Please try using better proxies\n" % url2)
@@ -220,19 +240,14 @@ def collect_data(lower_page, higher_page, working_ip, all_pages, thread_number):
             # Pass the HTML of the page and create
             return e.extract(r.text)
 
-    with open("urls.txt", 'r') as urllist, open('data.csv', 'w', encoding='utf-8') as outfile, \
-            open('gpt3training.txt', 'w', encoding='utf-8') as gptoutfile:
-        writer = csv.DictWriter(outfile,
-                                fieldnames=["title", "content", "date", "variant", "images", "verified", "author",
-                                            "rating",
-                                            "product", "url"], quoting=csv.QUOTE_ALL)
-        writer.writeheader()
+    with open("urls.txt", 'r') as urllist:
+        #writer.writeheader()
         for url in urllist.readlines():
             for i in range(lower_page, higher_page):
                 data = scrape(url.rstrip() + str(i),
                               old_randints[thread_number - 1], thread_number)  # appends the page number to the end of the url
                 # sleep(random.randint(1, 2))
-                # print(data)
+                print(data)
                 while data['reviews'] is None:
                     # print('Amazon blocked so scrapping again')
                     old_randints[thread_number - 1] = random.randint(0, len(working_ip) - 1)
@@ -257,13 +272,14 @@ def collect_data(lower_page, higher_page, working_ip, all_pages, thread_number):
                         r['content'] = r['content'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
                         r['title'] = r['title'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
                         r['author'] = r['author'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
-                        writer.writerow(r)
-                        gptoutfile.write(r['content'])
-                        gptoutfile.write("\n")
-                        # print(str(r))
+                        # writer.writerow(r)
+                        csv_outfile.append(r)
+                        # gptoutfile.write(r['content'] + "\n")
+                        txt_outfile.append(r['content'] + "\n")
+                        print(str(r))
                     global total_pages_scrapped
                     total_pages_scrapped = total_pages_scrapped + 1
-                    print(str((total_pages_scrapped / all_pages) * 100) + "%")
+                    print(str(round((total_pages_scrapped / all_pages) * 100, 2)) + "%")
                     # sleep(random.randint(1, 2))
 
 
