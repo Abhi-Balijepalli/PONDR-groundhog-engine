@@ -8,12 +8,11 @@ What each script does:
 
 reviews.py: takes in urls and srapes data
 
-models.py:
-anlysis the data and outputs package.json which can be sent to Pondr Admin API
+models.py: anlysis the data and outputs package.json which can be sent to Pondr Admin API
 
-GPT-3.py: work in progress stay tuned!!
+GPT-3.py: answers questions using reviews as examples, need Open AI GPT-3 API key
 
-api.py: communicates with the Admin API, make sure to download API and run locally
+api.py: communicates with the Pondr Admin API, make sure to download API and run locally
 
 have fun scrapping!
 
