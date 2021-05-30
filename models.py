@@ -19,6 +19,9 @@ from numba import cuda
 import openai
 from jsonlines import jsonlines
 
+nltk.download('wordnet')
+wnl = nltk.WordNetLemmatizer()
+print(wnl.lemmatize('earphones'))
 torch.cuda.empty_cache()
 
 plt.style.use('seaborn')  # pretty matplotlib plots
@@ -45,15 +48,19 @@ with open('data.csv') as csv_file:
             whole_review_date.append(str(row[2]))  # adding that review date to the list
 
 #  whole_reviews = np.array(whole_reviews)
-print(type(whole_reviews))
-print(whole_reviews)
-whole_reviews_top2 = whole_reviews * 10
+#whole_reviews_top2 = whole_reviews * 10
 # running unsupervised model and generating word cloud
-unsupervised_model = Top2Vec(whole_reviews_top2, min_count=10, embedding_model='universal-sentence-encoder')
+unsupervised_model = Top2Vec(whole_reviews, min_count=10, embedding_model='universal-sentence-encoder')
 # runs model and gets topics from sentence list
 topic_words, word_scores, topic_nums = unsupervised_model.get_topics(unsupervised_model.get_num_topics())
+
+print(topic_words[0])
+for word_index in range(0, len(topic_words[0])):  # gets rid of plural words
+    topic_words[0, word_index] = wnl.lemmatize(topic_words[0, word_index])
+print(topic_words[0])
 # gets the topics that were found in the line above
-candidate_labels = candidate_labels + (topic_words[0, 0:3]).tolist() # change number here to include more unsupervised topics
+candidate_labels = candidate_labels + (
+    topic_words[0, 0:5]).tolist()  # change number here to include more unsupervised topics
 print(candidate_labels)
 
 device = cuda.get_current_device()  # getting current device (GPU)
@@ -213,7 +220,8 @@ distributionScoreDf = df.groupby(['star_scale_sentiments'], as_index=False).coun
 distributionScoreDf.add_suffix('_Count').reset_index()
 
 # making trend data for plotting
-plotDfTrendline = df.groupby(['date'], as_index=False).mean().round(3)  # groups by date and takes the mean of the scores
+plotDfTrendline = df.groupby(['date'], as_index=False).mean().round(
+    3)  # groups by date and takes the mean of the scores
 df = df.sort_values('date')
 
 # making df for plotting variance and sentiment
@@ -314,7 +322,8 @@ plt.yticks([-1, 0, 1], [":(", ":|", ":)"], fontsize=20, fontweight='bold')
 plt.xticks(fontsize=20)
 plt.savefig('plot3.png')
 plt.close()
-json_trendline_regression = json.dumps([{'x': date, 'y': score} for date, score in zip(xdate, p(x2).round(3))], default=str)
+json_trendline_regression = json.dumps([{'x': date, 'y': score} for date, score in zip(xdate, p(x2).round(3))],
+                                       default=str)
 json_trendline_regression = json.loads(json_trendline_regression)
 # plt.show()
 
@@ -357,7 +366,7 @@ plt.xticks(fontsize=20)
 plt.xlim(one_year_ago_today, base)
 plt.savefig('plot3_oneYear.png')
 plt.close()
-date_time_xdate = pd.to_datetime(xdate)
+date_time_xdate = xdate.apply(lambda x: x.strftime('%Y-%m-%d'))
 json_trendline_regression_one_year = json.dumps(
     [{'x': date, 'y': score} for date, score in zip(date_time_xdate, p(x2).round(3))], default=str)
 json_trendline_regression_one_year = json.loads(json_trendline_regression_one_year)
@@ -645,8 +654,9 @@ whole_review_sentiment = [round(elem, 3) for elem in whole_review_sentiment]
 
 for label in candidate_labels:
     full_cat_json[label] = []
-for i in range(0, len(whole_reviews)-1):
-    full_cat_json[whole_review_category[i]].append({"date": whole_review_date[i], "score": whole_review_sentiment[i], "review": whole_reviews[i]})
+for i in range(0, len(whole_reviews) - 1):
+    full_cat_json[whole_review_category[i]].append(
+        {"date": whole_review_date[i], "score": whole_review_sentiment[i], "review": whole_reviews[i]})
 full_cat_json = json.dumps(full_cat_json, indent=1)
 full_cat_json = json.loads(full_cat_json)
 print("full cat df " + str(type(full_cat_json)))
@@ -724,14 +734,14 @@ package = {
             }
         },
         "summary": {
-            "nps": "37",
+            "nps": net_promoter_score,
             "num_of_reviews": str(len(whole_reviews)),
             "topics": (', '.join(topic_words[0:(len(topic_words) - 1), 0])).capitalize() + ', and ' + (
                 topic_words[(len(topic_words) - 1), 0]).capitalize(),
             "date": str(date.today()),
-            "category_data": full_cat_json
+            "category_data": upload['id']
         },
-        "gpt3_form_id": upload['id'],
+        "gpt3_form_id": "test",
 
         "review_types": {
             "best_review": whole_reviews[max_index],
