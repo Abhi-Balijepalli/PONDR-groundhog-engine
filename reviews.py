@@ -8,6 +8,7 @@ import requests
 from dateutil import parser as dateparser
 from lxml.html import fromstring
 from selectorlib import Extractor
+import re
 
 total_pages_scrapped = 0
 old_randints = [None]  # empty list for now, see end of run_everything() for more
@@ -25,7 +26,7 @@ def get_proxies():  # getting proxies by scrapping the site for free
     print(parser.xpath('//tbody/tr'))
     proxies = set()
 
-    for i in parser.xpath('//tbody/tr')[:150]:
+    for i in parser.xpath('//tbody/tr')[:200]:
         print(i.xpath('.//td[7][contains(text(),"yes")]'))
         if i.xpath('.//td[7][contains(text(),"yes")]'):
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
@@ -36,7 +37,7 @@ def get_proxies():  # getting proxies by scrapping the site for free
 
 def get_pro_proxies():  # getting proxies from the paid api
     proxies = set()
-    url5 = 'http://list.didsoft.com/get?email=tomcs333@gmail.com&pass=9txsme&pid=http3000&showcountry=no'
+    url5 = 'http://list.didsoft.com/get?email=tomcs333@gmail.com&pass=jfapqx&pid=http3000&showcountry=no'
     response = requests.get(url5)
     ip_string = response.text
     for proxy in ip_string.splitlines():
@@ -69,7 +70,8 @@ def run_everything(all_pages):
     global thread  # this is global for joining later
     global old_randints  # including old_randints as global
     global proxy_pool
-    num_of_loops = int(all_pages / 5)  # how many loops/ threads are needed
+    pages_per_thread = 5
+    num_of_loops = int(all_pages / pages_per_thread)  # how many loops/ threads are needed
     tens = 1  # the lower bound of the scrape() method
     old_randints = old_randints * num_of_loops  # making a list of size num_of_loops for proxy_index storage
 
@@ -81,7 +83,7 @@ def run_everything(all_pages):
     high_i = 2
     low_i = 1
 
-    while low_i < 51:  # change number here for num ips checked
+    while low_i < 76:  # change number here for num ips checked
         ip_thread = Thread(target=find_ip, args=(low_i, high_i))
         ip_threads.append(ip_thread)
         ip_thread.start()
@@ -104,8 +106,8 @@ def run_everything(all_pages):
             time.sleep(1)
             old_randints[i - 1] = random.randint(0, len(working_ip) - 1)
             print("current loop " + str(i))
-            thread = Thread(target=collect_data, args=(tens, (i * 5) + 1, all_pages, i))
-            tens = tens + 5
+            thread = Thread(target=collect_data, args=(tens, (i * pages_per_thread) + 1, all_pages, i))
+            tens = tens + pages_per_thread
             i = i + 1
             scrape_threads.append(thread)
             thread.start()
@@ -211,6 +213,12 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
             site_response.headers = headers
             # Download the page using requests
             print("Downloading %s" % url2)
+            try:
+                print(working_ip[randint])  #if working ip was deleted (index out of range)
+            except:
+                randint = random.randint(0, len(working_ip) - 1)  # assign a new randint
+                old_randints[thread_number - 1] = randint
+
             print('current proxy ' + working_ip[randint])
             stop_count = 0
             r = ''
@@ -242,34 +250,56 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
     with open("urls.txt", 'r') as urllist:
         # writer.writeheader()
         for url in urllist.readlines():
+
+            scrape_url = url.rstrip()
+            m = re.search('https://www.amazon.com/(.+?)/dp/', scrape_url)
+            t = re.search('/dp/(.+?)/?_encoding', scrape_url)
+            if m:
+                productName = m.group(1)
+            if t:
+                productId = t.group(1)
+                productId = productId.replace('?', '')
+            else:
+                t = re.search('/dp/(.+?)/ref', scrape_url)
+                productId = t.group(1)
+                productId = productId + '/'
+
+            scrape_url = 'https://www.amazon.com/' + productName + '/product-reviews/' + productId + 'ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
+
             for i in range(lower_page, higher_page):
-                data = scrape(url.rstrip() + str(i),
+
+                data = scrape(scrape_url + str(i),
                               old_randints[thread_number - 1],
                               thread_number)  # appends the page number to the end of the url
                 # sleep(random.randint(1, 2))
                 print(data)
                 while data['reviews'] is None:
-                    print('Amazon blocked so scrapping again')
-                    print(old_randints[thread_number - 1])
-                    print('ip deleting ' + working_ip[old_randints[thread_number - 1]])
-                    del working_ip[old_randints[thread_number - 1]]
-                    if len(working_ip) < 5:
-                        ip_threads = []  # lists of threads to join
-                        high_i = 2
-                        low_i = 1
-                        while low_i < 26:  # change number here for num ips checked
-                            ip_thread = Thread(target=find_ip, args=(low_i, high_i))
-                            ip_threads.append(ip_thread)
-                            ip_thread.start()
-                            low_i = low_i + 1
-                            high_i = high_i + 1
-                            time.sleep(0.1)
+                    try:
+                        print('Amazon blocked so scrapping again')
+                        print(old_randints[thread_number - 1])
+                        print('ip deleting ' + working_ip[old_randints[thread_number - 1]])
+                        del working_ip[old_randints[thread_number - 1]]
+                        if len(working_ip) < 5:
+                            ip_threads = []  # lists of threads to join
+                            high_i = 2
+                            low_i = 1
+                            while low_i < 51:  # change number here for num ips checked
+                                ip_thread = Thread(target=find_ip, args=(low_i, high_i))
+                                ip_threads.append(ip_thread)
+                                ip_thread.start()
+                                low_i = low_i + 1
+                                high_i = high_i + 1
+                                time.sleep(0.1)
 
-                        for t in ip_threads:
-                            t.join()  # joins all started threads to find working ups
+                            for t in ip_threads:
+                                t.join()  # joins all started threads to find working ups
 
-                    old_randints[thread_number - 1] = random.randint(0, len(working_ip) - 1)
-                    data = scrape(url.rstrip() + str(i), old_randints[thread_number - 1], thread_number)
+                        old_randints[thread_number - 1] = random.randint(0, len(working_ip) - 1)
+                    except:
+                        print('ip already deleted, assigning new randint')
+                        old_randints[thread_number - 1] = random.randint(0, len(working_ip) - 1)
+
+                    data = scrape(scrape_url + str(i), old_randints[thread_number - 1], thread_number)
                 if data:
                     for r in data['reviews']:
                         r["product"] = data["product_title"]

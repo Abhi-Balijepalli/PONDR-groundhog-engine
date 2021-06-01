@@ -37,7 +37,7 @@ whole_review_category = []
 mean_sentiment = 0
 
 print(
-    '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 0 Unsupervised Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+    '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 0 Unsupervised Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
 with open('data.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
@@ -48,7 +48,7 @@ with open('data.csv') as csv_file:
             whole_review_date.append(str(row[2]))  # adding that review date to the list
 
 #  whole_reviews = np.array(whole_reviews)
-#whole_reviews_top2 = whole_reviews * 10
+# whole_reviews_top2 = whole_reviews * 10
 # running unsupervised model and generating word cloud
 unsupervised_model = Top2Vec(whole_reviews, min_count=10, embedding_model='universal-sentence-encoder')
 # runs model and gets topics from sentence list
@@ -78,8 +78,7 @@ for label in candidate_labels:
 
 print(sen_topic_dict)
 
-print(
-    '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
 # running model 1, topic analysis
 with open('data.csv') as csv_file:
@@ -115,8 +114,7 @@ with open('data.csv') as csv_file:
                 sen_topic_dict[topic_categories[max_score_index]][8].append(row[8])  # product
                 sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
 
-print(
-    '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
 for key, dict_list_list in sen_topic_dict.items():  # loops through items in the main sentence dictionary
     sen_list = dict_list_list[0]  # getting sentences from 2D array
@@ -453,45 +451,43 @@ for i in range(0, len(plotDfCategory.category)):
     elif plotDfCategory.score[i] < -0.1:
         categorySentences[i] = str(plotDfCategory.category[i] + ': ' + str(
             round(plotDfCategory.score[i], 3)) + ' -- Consumer sentiment towards ' + plotDfCategory.category[
-                                       i] + ' is negative. Consumers arent satisfied with the ' +
-                                   plotDfCategory.category[i] + ' of your product. \n')
+                                       i] + ' is negative. Consumers arent satisfied with ' +
+                                   plotDfCategory.category[i] + ' \n')
     elif plotDfCategory.score[i] > 0.1:
         categorySentences[i] = str(plotDfCategory.category[i] + ': ' + str(
             round(plotDfCategory.score[i], 3)) + ' -- Consumer sentiment towards ' + plotDfCategory.category[
-                                       i] + ' is positive. Consumers are satisfied with the ' +
-                                   plotDfCategory.category[i] + ' of your product! \n')
+                                       i] + ' is positive. Consumers are satisfied with ' +
+                                   plotDfCategory.category[i] + ' \n')
 
+categorySentences = filter(None.__ne__, categorySentences)
 pdftext.multi_cell(75, 5, ''.join(categorySentences), align='L')
 
 offset = pdftext.x + 110
 pdftext.image('plot4.png', x=10, y=100, w=105, h=80)
 pdftext.y = 110
 pdftext.x = offset
+variant_description = ""
 if len(plot_df_variant.variant) <= 1:
-    pdftext.multi_cell(75, 5, 'This graph displays customer sentiment per product variant. However, this product only '
-                              'has one variant which has an average sentiment score of ' + str(
-        round(plot_df_variant.score[0], 3)), align='L')
+    variant_description = 'This graph displays customer sentiment per product variant. However, this product only has one variant which has an average sentiment score of ' + str(
+        round(plot_df_variant.score[0], 3))
+    pdftext.multi_cell(75, 5, variant_description, align='L')
 else:
-    pdftext.multi_cell(75, 5,
-                       'This graph displays customer sentiment per product variant. Of the customers who reviewed '
-                       'this product, they prefered the ' + plot_df_variant.variant[max_variant_sentiment_index] +
-                       ' variant and disliked the ' + plot_df_variant.variant[min_variant_sentiment_index] + ' variant',
-                       align='L')
+    variant_description = 'This graph displays customer sentiment per product variant. Of the customers who reviewed this product, they prefered the ' + \
+                          plot_df_variant.variant[max_variant_sentiment_index] + ' variant and disliked the ' + \
+                          plot_df_variant.variant[min_variant_sentiment_index] + ' variant'
+    pdftext.multi_cell(75, 5, variant_description, align='L')
 
 offset = pdftext.x + 110
 pdftext.image('plot4star.png', x=10, y=175, w=105, h=80)
 pdftext.y = 185
 pdftext.x = offset
 if len(plot_df_variant_star.variant) <= 1:
-    pdftext.multi_cell(75, 5,
-                       'This graph displays customer star rating per product variant. However, this product only '
-                       'has one variant which has an average star rating of ' + str(
-                           round(plot_df_variant_star.rating[0], 3)), align='L')
+    star_variant_description = 'This graph displays customer star rating per product variant. However, this product only has one variant which has an average star rating of ' + str(round(plot_df_variant_star.rating[0], 3))
+    pdftext.multi_cell(75, 5,star_variant_description, align='L')
 else:
+    star_variant_description = 'This graph displays customer star rating per product variant. Of the customers who reviewed this product, they prefered the ' + plot_df_variant_star.variant[max_variant_star_index] +' variant and disliked the ' + plot_df_variant_star.variant[min_variant_star_index] + ' variant'
     pdftext.multi_cell(75, 5,
-                       'This graph displays customer star rating per product variant. Of the customers who reviewed '
-                       'this product, they prefered the ' + plot_df_variant_star.variant[max_variant_star_index] +
-                       ' variant and disliked the ' + plot_df_variant_star.variant[min_variant_star_index] + ' variant',
+                       star_variant_description,
                        align='L')
 
 pdftext.add_page()
@@ -654,9 +650,15 @@ whole_review_sentiment = [round(elem, 3) for elem in whole_review_sentiment]
 
 for label in candidate_labels:
     full_cat_json[label] = []
+twoD_cat_list = list(zip(whole_review_category, whole_review_date, whole_review_sentiment, whole_reviews))  # zipping
+category_df = pd.dataFrame(twoD_cat_list, columns=['category', 'date', 'score', 'review'])
+category_df['date'] = pd.to_datetime(category_df['date'])
+category_group = category_df.groupby(category_df['date'].datetime.strftime('%Y-%m'))['score'].mean().sort_values()
+
 for i in range(0, len(whole_reviews) - 1):
     full_cat_json[whole_review_category[i]].append(
-        {"date": whole_review_date[i], "score": whole_review_sentiment[i], "review": whole_reviews[i]})
+        {"date": datetime.datetime.strptime(whole_review_date[i], "%d %b %Y").strftime('%Y-%m-%d'),
+         "score": whole_review_sentiment[i], "review": whole_reviews[i]})
 full_cat_json = json.dumps(full_cat_json, indent=1)
 full_cat_json = json.loads(full_cat_json)
 print("full cat df " + str(type(full_cat_json)))
@@ -669,7 +671,6 @@ file_name = "gpt3training.txt"
 
 with open(file_name) as f:
     mylist = f.read().splitlines()
-
 json_to_upload = json.dumps([{'text': test} for test in mylist], default=str, indent=1)
 json_to_upload = json.loads(json_to_upload)
 print(type(json_to_upload))
@@ -694,12 +695,12 @@ package = {
         "product_name": df.iloc[1, 8],
         "1": {
             "title": "Sentiment per category",
-            "description": "This is a graph of sentiment per category...",
+            "description": categorySentences,
             "sentiment_per_category": json_category
         },
         "2": {
             "title": "Sentiment per variant",
-            "description": "This is the graph for product sentiment per product variant",
+            "description": variant_description,
             "sentiment_per_variant": json_variant_score
         },
         "3": {
@@ -710,38 +711,38 @@ package = {
         },
         "4": {
             "title": "Distributions of star rating",
-            "description": "this is the plot of the distributions of the star ratings of this product ",
+            "description": star_variant_description,
             "distributions_of_star": json_score_distribution
         },
         "5": {
             "title": " line graphs",
             "description1": "this is the trendline plot for this product's sentiment for all time",
             "product_trend_all": {
-                "regression_line": json_trendline_regression,
+                "regression_line": [json_trendline_regression[0], json_trendline_regression[-1]],
                 "points": json_date_score
             },
 
             "description2": "this is the trendline plot for this product's sentiment for one year",
             "product_trend_1year": {
-                "regression_line": json_trendline_regression_one_year,
+                "regression_line": [json_trendline_regression_one_year[0], json_trendline_regression_one_year[-1]],
                 "points": json_date_one_year
             },
 
             "description3": "this is the trendline plot for this product's star rating for all time",
             "product_trend_all_star": {
-                "regression_line": json_trendline_rating_regression,
+                "regression_line": [json_trendline_rating_regression[0], json_trendline_rating_regression[-1]],
                 "points": json_date_rating
             }
         },
         "summary": {
-            "nps": net_promoter_score,
+            "nps": round(net_promoter_score, 3),
             "num_of_reviews": str(len(whole_reviews)),
             "topics": (', '.join(topic_words[0:(len(topic_words) - 1), 0])).capitalize() + ', and ' + (
                 topic_words[(len(topic_words) - 1), 0]).capitalize(),
             "date": str(date.today()),
-            "category_data": upload['id']
+            "category_data": full_cat_json
         },
-        "gpt3_form_id": "test",
+        "gpt3_form_id": upload['id'],
 
         "review_types": {
             "best_review": whole_reviews[max_index],

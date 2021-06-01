@@ -9,7 +9,6 @@ f = open('package.json')
 # a dictionary
 package = json.load(f)
 
-
 print(type(package))
 # defining the api-endpoint
 API_ENDPOINT = "http://127.0.0.1:8080/analyze"
@@ -18,9 +17,7 @@ API_ENDPOINT = "http://127.0.0.1:8080/analyze"
 
 print(package)
 # sending post request and saving response as response object
-r = requests.post('http://127.0.0.1:8080/analyze', json=
-    package
-)
+r = requests.post('http://127.0.0.1:8080/analyze', json=package)
 
 # extracting response text
 pastebin_url = r.text
