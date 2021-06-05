@@ -2,24 +2,26 @@
 import requests
 import json
 
-# Opening JSON file
-f = open('package.json')
 
-# returns JSON object as
-# a dictionary
-package = json.load(f)
+def send_data(id):
+    # Opening JSON file
+    f = open('package_' + str(id) + '.json')
 
-print(type(package))
-# defining the api-endpoint
-API_ENDPOINT = "http://127.0.0.1:8080/analyze"
+    # returns JSON object as
+    # a dictionary
+    package = json.load(f)
 
-# data to be sent to api
+    print(type(package))
+    # defining the api-endpoint
+    API_ENDPOINT = "http://127.0.0.1:8080/analyze"
 
-print(package)
-# sending post request and saving response as response object
-r = requests.post('http://127.0.0.1:8080/analyze', json=package)
+    # data to be sent to api
 
-# extracting response text
-pastebin_url = r.text
+    print(package)
+    # sending post request and saving response as response object
+    r = requests.post('http://127.0.0.1:8080/analyze', json=package)
 
-print("The pastebin URL is:%s" % pastebin_url)
+    # extracting response text
+    pastebin_url = r.text
+
+    print("The pastebin URL is:%s" % pastebin_url)

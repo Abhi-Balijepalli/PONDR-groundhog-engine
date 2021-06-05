@@ -1,6 +1,9 @@
 product_title:
     css: 'h1 a[data-hook="product-link"]'
     type: Text
+review_number:
+    css: 'div[data-hook="cr-filter-info-review-rating-count"]'
+    type: Text
 reviews:
     css: 'div.review div.a-section.celwidget'
     multiple: true
