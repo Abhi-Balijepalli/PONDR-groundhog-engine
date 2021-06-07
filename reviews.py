@@ -245,6 +245,7 @@ def get_page_num(url2):
     search_string = search_string.replace(',', '')
     print(search_string)
     page_int = int(float(search_string))
+
     page_int = page_int / 10
     page_int = round(page_int / 10) * 10
     return page_int
@@ -292,8 +293,8 @@ def run_scrapping(url_to_scrape):
         t.join()  # joins all started threads to find working ups
 
     all_pages = get_page_num(scrape_url + '1')  # appends the page number to the end of the url
-    if all_pages > 80:
-        all_pages = 80
+    if all_pages > 100:
+        all_pages = 100
     print(all_pages)
 
     pages_per_thread = 1

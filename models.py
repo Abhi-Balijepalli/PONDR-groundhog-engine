@@ -173,7 +173,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
 
     star_scale_sentiments = []
     for sentiment in df.score:
-        star_scale_sentiments.append(int(((5 - 1) / (1 + 1)) * (sentiment - 1) + 5))
+        star_scale_sentiments.append(int(round(((5 - 1) / (1 + 1)) * (sentiment - 1) + 5)))
 
     df['star_scale_sentiments'] = star_scale_sentiments
 
@@ -387,23 +387,23 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
             "company_id": company_id,
             "product_name": df.iloc[1, 8],
             "1": {
-                "title": "Sentiment per category",
+                "title": "Sentiment Per Category",
                 "description": 'sentiment_par_category_description',
                 "sentiment_per_category": json_category
             },
             "2": {
-                "title": "Sentiment per variant",
+                "title": "Sentiment Per Variant",
                 "description": 'sentiment_variant_description',
                 "sentiment_per_variant": json_variant_score
             },
             "3": {
-                "title": "Distributions of star rating",
+                "title": "Distributions of Star Rating",
                 "description": "star_variant_description",
                 "distributions_of_sentiment": json_star_distribution
 
             },
             "4": {
-                "title": "Distributions of sentiment",
+                "title": "Distributions of Sentiment",
                 "description": "This is the plot of distributions of the sentiment rating of this product ",
                 "distributions_of_star": json_score_distribution
             },
