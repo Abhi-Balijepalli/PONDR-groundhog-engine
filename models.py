@@ -44,8 +44,13 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         print(row)
         whole_reviews.append(str(row[1]))  # adding the whole review to the list
         whole_review_date.append(str(row[2]))  # adding that review date to the list
+    if len(whole_reviews) < 100:
+        whole_reviews_top2 = whole_reviews*10
 
-    unsupervised_model = Top2Vec(whole_reviews, min_count=10, embedding_model='universal-sentence-encoder')
+    else:
+        whole_reviews_top2 = whole_reviews
+
+    unsupervised_model = Top2Vec(whole_reviews_top2, min_count=10, embedding_model='universal-sentence-encoder')
     # runs model and gets topics from sentence list
     topic_words, word_scores, topic_nums = unsupervised_model.get_topics(unsupervised_model.get_num_topics())
 

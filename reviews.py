@@ -245,9 +245,12 @@ def get_page_num(url2):
     search_string = search_string.replace(',', '')
     print(search_string)
     page_int = int(float(search_string))
-
-    page_int = page_int / 10
-    page_int = round(page_int / 10) * 10
+    page_int = int(page_int/10)+1
+    #if page_int <= 100:
+    #    page_int = int(page_int / 10) * 10
+    #elif page_int > 100:
+    #    page_int = page_int / 10
+    #    page_int = round(page_int / 10) * 10
     return page_int
 
 
@@ -258,7 +261,7 @@ def run_scrapping(url_to_scrape):
     global proxy_pool
     scrape_url = url_to_scrape
     scrape_url = scrape_url.rstrip()
-
+    print(scrape_url)
     m = re.search('https://www.amazon.com/(.+?)/dp/', scrape_url)
     t = re.search('/dp/(.+?)/?_encoding', scrape_url)
     if m:
@@ -304,25 +307,21 @@ def run_scrapping(url_to_scrape):
 
     scrape_threads = []
 
-    if all_pages < 10:
-        print('@@@@ less then 10 pages @@@@')
-        collect_data(1, all_pages, all_pages, 1)
-    else:
-        print('@@@@ more then 10 pages @@@@')
-        i = 1
-        while i <= num_of_loops:
-            time.sleep(1)
-            old_randints[i - 1] = random.randint(0, len(working_ip) - 1)
-            print("current loop " + str(i))
-            thread = Thread(target=collect_data, args=(tens, (i * pages_per_thread) + 1, all_pages, i))
-            tens = tens + pages_per_thread
-            i = i + 1
-            scrape_threads.append(thread)
-            thread.start()
-            # fix not 10s bug here!!
+    print('@@@@ starting @@@@')
+    i = 1
+    while i <= num_of_loops:
+        time.sleep(1)
+        old_randints[i - 1] = random.randint(0, len(working_ip) - 1)
+        print("current loop " + str(i))
+        thread = Thread(target=collect_data, args=(tens, (i * pages_per_thread) + 1, all_pages, i))
+        tens = tens + pages_per_thread
+        i = i + 1
+        scrape_threads.append(thread)
+        thread.start()
+        # fix not 10s bug here!!
 
-        for t in scrape_threads:
-            t.join()
+    for t in scrape_threads:
+        t.join()
 
     return csv_outfile, txt_outfile
 
@@ -380,14 +379,14 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
                             r['verified'] = 'Yes'
                         else:
                             r['verified'] = 'Yes'
-                        if r['rating'] is None: r['rating'] = 'None'
+                        if r['rating'] is None: r['rating'] = '3'  # change this @@@@@@@@@@@
                     r['rating'] = r['rating'].split(' out of')[0]
                     date_posted = r['date'].split('on ')[-1]
                     if r['images']:
                         r['images'] = "\n".join(r['images'])
                     r['date'] = dateparser.parse(date_posted).strftime('%d %b %Y')
                     r['content'] = r['content'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
-                    if 'your browser does not support html5 video' in r['content']:
+                    if 'Your browser does not support HTML5 video.' in r['content']:
                         r['content'] = r['content'].replace('your browser does not support html5 video', '')
                     if r['title'] is None:
                         r['title'] = ''

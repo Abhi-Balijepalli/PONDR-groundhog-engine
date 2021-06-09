@@ -26,6 +26,6 @@ def get_products():
         r['product_id'] = elem['Product_id']
         r['url'] = elem['Amazon_link']
         r['id'] = i
-        api_dict.append(r)
         i = i + 1
+        api_dict.append(r)
     return api_dict
