@@ -18,6 +18,7 @@ working_ip = []
 proxy_pool = []
 scrape_url = ""
 page_percentage = 0
+first_page_data = ""
 # This data was created by using the curl method explained above
 headers_list = [
     # Firefox 77 Mac
@@ -100,8 +101,8 @@ def get_pro_proxies():  # getting proxies from the paid api
     return proxies
 
 
-def find_ip(lower_range,
-            upper_range):  # finds ip in a given range from an ip list generated from get_pro_proxie or get_proxie
+def find_ip(lower_range, upper_range):
+    # finds ip in a given range from an ip list generated from get_pro_proxie or get_proxie
 
     url4 = 'https://httpbin.org/ip'
     session = requests.Session()
@@ -238,17 +239,47 @@ def get_page_num(url2):
             continue
 
     print(str(r.status_code))
-    return_string = e.extract(r.text)['review_number']
+    data = e.extract(r.text)
+    for r in data['reviews']:
+        r["product"] = data["product_title"]
+        r['url'] = scrape_url + '1'
+        if 'verified' in r:
+            if r['verified'] is None:
+                r['verified'] = 'No'
+            elif 'Verified Purchase' in r['verified']:  # not sure if nessesary
+                r['verified'] = 'Yes'
+            else:
+                r['verified'] = 'Yes'
+            if r['rating'] is None: r['rating'] = '3'  # change this @@@@@@@@@@@
+        r['rating'] = r['rating'].split(' out of')[0]
+        date_posted = r['date'].split('on ')[-1]
+        if r['images']:
+            r['images'] = "\n".join(r['images'])
+        r['date'] = dateparser.parse(date_posted).strftime('%d %b %Y')
+        r['content'] = r['content'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
+        if 'Your browser does not support HTML5 video.' in r['content']:
+            r['content'] = r['content'].replace('your browser does not support html5 video', '')
+        if r['title'] is None:
+            r['title'] = ''
+        else:
+            r['title'] = r['title'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
+        r['author'] = r['author'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
+        print(r)
+        csv_outfile.append(r)
+    global total_pages_scrapped
+    total_pages_scrapped = total_pages_scrapped + 1
+
+    return_string = data['review_number']
     search_string = re.search('ratings (.+?)global reviews', return_string)
     search_string = search_string.group(1)
     search_string = search_string.replace('|', '')
     search_string = search_string.replace(',', '')
     print(search_string)
     page_int = int(float(search_string))
-    page_int = int(page_int/10)+1
-    #if page_int <= 100:
+    page_int = int(page_int / 10) + 1
+    # if page_int <= 100:
     #    page_int = int(page_int / 10) * 10
-    #elif page_int > 100:
+    # elif page_int > 100:
     #    page_int = page_int / 10
     #    page_int = round(page_int / 10) * 10
     return page_int
@@ -302,13 +333,13 @@ def run_scrapping(url_to_scrape):
 
     pages_per_thread = 1
     num_of_loops = int(all_pages / pages_per_thread)  # how many loops/ threads are needed
-    tens = 1  # the lower bound of the scrape() method
+    tens = 2  # the lower bound of the scrape() method
     old_randints = old_randints * num_of_loops  # making a list of size num_of_loops for proxy_index storage
 
     scrape_threads = []
 
     print('@@@@ starting @@@@')
-    i = 1
+    i = 2
     while i <= num_of_loops:
         time.sleep(1)
         old_randints[i - 1] = random.randint(0, len(working_ip) - 1)

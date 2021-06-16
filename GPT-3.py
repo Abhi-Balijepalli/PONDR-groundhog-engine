@@ -1,8 +1,9 @@
-import os
 import openai
 import json
 import time
 from jsonlines import jsonlines
+import pandas as pd
+
 # Load your API key from an environment variable or secret management service
 
 openai.api_key = ("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")
@@ -34,6 +35,8 @@ print(upload['id'])
 time.sleep(10)
 
 response = openai.Answer.create(
+    n=3,
+    temperature=0.35,
     search_model="ada",
     model="curie",
     question="Why don’t you like this product?",
@@ -47,6 +50,10 @@ response = openai.Answer.create(
 
 print(response)
 
+document_list = response['selected_documents']
+df = pd.DataFrame(data=document_list)
+text_list = df.nlargest(3, 'score')['text'].tolist()
+print(text_list)
 time.sleep(10)
 
 openai.File.delete(upload['id'])

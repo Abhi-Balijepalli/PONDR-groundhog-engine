@@ -44,7 +44,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         print(row)
         whole_reviews.append(str(row[1]))  # adding the whole review to the list
         whole_review_date.append(str(row[2]))  # adding that review date to the list
-    if len(whole_reviews) < 100:
+        print(len(whole_reviews))
+    if len(whole_reviews) < 150:
         whole_reviews_top2 = whole_reviews*10
 
     else:
@@ -91,9 +92,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
             topic_categories = whole_classified_dict.get('labels')  # gets the labels (categories) from dictionary
             whole_topic_scores = whole_classified_dict.get('scores')
             # gets the scores from the dictionary produced by running the model again
-            whole_max_score_index, whole_review_max_value = max(enumerate(whole_topic_scores),
-                                                                key=operator.itemgetter(
-                                                                    1))  # finds the max score of the model output scores
+            whole_max_score_index, whole_review_max_value = max(enumerate(whole_topic_scores),key=operator.itemgetter(1))
+            # finds the max score of the model output scores
             print("whole review topic " + str(topic_categories[whole_max_score_index]))
             whole_review_category.append(topic_categories[whole_max_score_index])
             sequence_to_classify = nltk.tokenize.sent_tokenize(row[1])
@@ -437,7 +437,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
                 "num_of_reviews": str(len(whole_reviews)),
                 "topics": (', '.join(unique_topics[0:(len(unique_topics) - 1)])) + ', and ' +
                           (unique_topics[(len(unique_topics) - 1)]),
-                "date": str(today),
+                "date": 'fixing',
                 "category_data": full_cat_json
             },
             "gpt3_form_id": upload['id'],
@@ -451,6 +451,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         }
     }
 
+    print(type(today.strftime('%Y-%m-%d')))
+    print(today.strftime('%Y-%m-%d'))
     with open('package_' + str(id) + '.json', 'w') as json_file:
         json.dump(package, json_file)
 
