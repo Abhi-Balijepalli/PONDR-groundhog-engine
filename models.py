@@ -342,20 +342,19 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
 
     for label in candidate_labels:
         full_cat_json[label] = []
-    twoD_cat_list = list(
-        zip(whole_review_category, whole_review_date, whole_review_sentiment, whole_reviews))  # zipping
-    twoD_cat_list = list(sorted(twoD_cat_list, key=lambda x: datetime.datetime.strptime(x[1], "%d %b %Y")))
+    twoD_cat_list = list(zip(df.category, date_time_xdate, df.score, df.sentence))  # zipping
+    twoD_cat_list = list(sorted(twoD_cat_list, key=lambda x: datetime.datetime.strptime(x[1], '%Y-%m-%d')))
     unzipped_object = zip(*twoD_cat_list)
     unzipped_list = list(unzipped_object)
-    whole_reviews = unzipped_list[3]
-    whole_review_sentiment = unzipped_list[2]
-    whole_review_date = unzipped_list[1]
-    whole_review_category = unzipped_list[0]
+    sentence_list = unzipped_list[3]
+    score_list = unzipped_list[2]
+    date_list = unzipped_list[1]
+    cat_list = unzipped_list[0]
 
     for i in range(0, len(whole_reviews) - 1):
-        full_cat_json[whole_review_category[i]].append(
-            {"date": datetime.datetime.strptime(whole_review_date[i], "%d %b %Y").strftime('%Y-%m-%d'),
-             "score": whole_review_sentiment[i], "review": whole_reviews[i]})
+        full_cat_json[cat_list[i]].append(
+            {"date": datetime.datetime.strptime(date_list[i], '%Y-%m-%d'),
+             "score": score_list[i], "review": sentence_list[i]})
     full_cat_json = json.dumps(full_cat_json, indent=1)
     full_cat_json = json.loads(full_cat_json)
     print("full cat df " + str(type(full_cat_json)))
