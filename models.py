@@ -437,7 +437,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
                 "num_of_reviews": str(len(whole_reviews)),
                 "topics": (', '.join(unique_topics[0:(len(unique_topics) - 1)])) + ', and ' +
                           (unique_topics[(len(unique_topics) - 1)]),
-                "date": 'fixing',
+                "date": str(today),
                 "category_data": full_cat_json
             },
             "gpt3_form_id": upload['id'],
