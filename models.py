@@ -46,7 +46,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         whole_review_date.append(str(row[2]))  # adding that review date to the list
         print(len(whole_reviews))
     if len(whole_reviews) < 150:
-        whole_reviews_top2 = whole_reviews*10
+        whole_reviews_top2 = whole_reviews * 10
 
     else:
         whole_reviews_top2 = whole_reviews
@@ -92,7 +92,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
             topic_categories = whole_classified_dict.get('labels')  # gets the labels (categories) from dictionary
             whole_topic_scores = whole_classified_dict.get('scores')
             # gets the scores from the dictionary produced by running the model again
-            whole_max_score_index, whole_review_max_value = max(enumerate(whole_topic_scores),key=operator.itemgetter(1))
+            whole_max_score_index, whole_review_max_value = max(enumerate(whole_topic_scores),
+                                                                key=operator.itemgetter(1))
             # finds the max score of the model output scores
             print("whole review topic " + str(topic_categories[whole_max_score_index]))
             whole_review_category.append(topic_categories[whole_max_score_index])
@@ -338,11 +339,12 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
     json_date_one_year = parsed
 
     full_cat_json = {}
+    datetime_dates = df.date.apply(lambda x: x.strftime('%Y-%m-%d'))
     whole_review_sentiment = [round(elem, 3) for elem in whole_review_sentiment]
 
     for label in candidate_labels:
         full_cat_json[label] = []
-    twoD_cat_list = list(zip(df.category, date_time_xdate, df.score, df.sentence))  # zipping
+    twoD_cat_list = list(zip(df.category, datetime_dates, df.score, df.sentence))  # zipping
     twoD_cat_list = list(sorted(twoD_cat_list, key=lambda x: datetime.datetime.strptime(x[1], '%Y-%m-%d')))
     unzipped_object = zip(*twoD_cat_list)
     unzipped_list = list(unzipped_object)
@@ -353,8 +355,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
 
     for i in range(0, len(whole_reviews) - 1):
         full_cat_json[cat_list[i]].append(
-            {"date": datetime.datetime.strptime(date_list[i], '%Y-%m-%d'),
-             "score": score_list[i], "review": sentence_list[i]})
+            {"date": date_list[i], "score": score_list[i], "review": sentence_list[i]})
     full_cat_json = json.dumps(full_cat_json, indent=1)
     full_cat_json = json.loads(full_cat_json)
     print("full cat df " + str(type(full_cat_json)))
@@ -413,19 +414,19 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
             },
             "5": {
                 "title": " line graphs",
-                "description1": "this is the trendline plot for this product's sentiment for all time",
+                "description1": "This is the trendline plot for this product's sentiment for all time",
                 "product_trend_all": {
                     "regression_line": [json_trendline_regression[0], json_trendline_regression[-1]],
                     "points": json_date_score
                 },
 
-                "description2": "this is the trendline plot for this product's sentiment for one year",
+                "description2": "This is the trendline plot for this product's sentiment for one year",
                 "product_trend_1year": {
                     "regression_line": [json_trendline_regression_one_year[0], json_trendline_regression_one_year[-1]],
                     "points": json_date_one_year
                 },
 
-                "description3": "this is the trendline plot for this product's star rating for all time",
+                "description3": "This is the trendline plot for this product's star rating for all time",
                 "product_trend_all_star": {
                     "regression_line": [json_trendline_rating_regression[0], json_trendline_rating_regression[-1]],
                     "points": json_date_rating
@@ -436,7 +437,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
                 "num_of_reviews": str(len(whole_reviews)),
                 "topics": (', '.join(unique_topics[0:(len(unique_topics) - 1)])) + ', and ' +
                           (unique_topics[(len(unique_topics) - 1)]),
-                "date": 'fixing',
+                "date": str(today),
                 "category_data": full_cat_json
             },
             "gpt3_form_id": upload['id'],
@@ -450,8 +451,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         }
     }
 
-    print(type(today.strftime('%Y-%m-%d')))
-    print(today.strftime('%Y-%m-%d'))
     with open('package_' + str(id) + '.json', 'w') as json_file:
         json.dump(package, json_file)
 

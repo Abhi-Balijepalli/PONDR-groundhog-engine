@@ -1,0 +1,3 @@
+price:
+    css: 'td span[id="priceblock_dealprice"]'
+    type: Text

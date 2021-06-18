@@ -17,6 +17,7 @@ txt_outfile = []
 working_ip = []
 proxy_pool = []
 scrape_url = ""
+original_url = ""
 page_percentage = 0
 first_page_data = ""
 # This data was created by using the curl method explained above
@@ -74,7 +75,6 @@ headers_list = [
 
 
 def get_proxies():  # getting proxies by scrapping the site for free
-
     url3 = 'https://free-proxy-list.net/'
     response = requests.get(url3)
     parser = fromstring(response.text)
@@ -103,7 +103,6 @@ def get_pro_proxies():  # getting proxies from the paid api
 
 def find_ip(lower_range, upper_range):
     # finds ip in a given range from an ip list generated from get_pro_proxie or get_proxie
-
     url4 = 'https://httpbin.org/ip'
     session = requests.Session()
     for i in range(lower_range, upper_range):
@@ -188,6 +187,58 @@ def scrape(url2, ip_index, thread_number):
         return e.extract(r.text)
 
 
+def get_price(front_url):
+    print("@@@@@@ getting price @@@@@@")
+    e = Extractor.from_yaml_file('front_selector.yml')
+    global headers
+    # Create ordered dict from Headers above
+    ordered_headers_list = []
+
+    for headers in headers_list:
+        h = OrderedDict()
+        for header, value in headers.items():
+            h[header] = value
+        ordered_headers_list.append(h)
+    # Pick a random browser headers
+    headers = random.choice(headers_list)
+    # Create a request session
+    site_response = requests.Session()
+    site_response.headers = headers
+    # Download the page using requests
+    print("Downloading %s" % front_url)
+    current_ip = random.randint(0, len(working_ip) - 1)
+    print('current proxy ' + working_ip[current_ip])
+    stop_count = 0
+    r = ''
+    while r == '':
+        try:
+            r = site_response.get(front_url, headers=headers, proxies={"http": working_ip[current_ip],
+                                                                       "https": working_ip[current_ip]}, timeout=45)
+            if e.extract(r.text)['price'] is None:
+                print('Amazon blocked so new ip')
+                print(e.extract(r.text))
+                current_ip = random.randint(0, len(working_ip) - 1)
+                r = ''
+            else:
+                break
+        except:
+            sleep_time = 5
+            print("Connection refused by the server..")
+            print("Let me sleep for " + str(sleep_time) + " seconds")
+            print("ZZzzzz...")
+            time.sleep(sleep_time)
+            print("Was a nice sleep, now let me continue...")
+            stop_count = stop_count + 1
+            print("stop count " + str(stop_count))
+            if stop_count > 3:
+                current_ip = random.randint(0, len(working_ip) - 1)  # try to assign this to the global ip array
+                print('to many stops, reassigning randint')
+                stop_count = 0
+            continue
+    data = e.extract(r.text)
+    return str(data['price'])
+
+
 def get_page_num(url2):
     # Create an Extractor by reading from the YAML file
     e = Extractor.from_yaml_file('selectors.yml')
@@ -213,9 +264,8 @@ def get_page_num(url2):
     r = ''
     while r == '':
         try:
-            r = site_response.get(url2, headers=headers,
-                                  proxies={"http": working_ip[current_ip], "https": working_ip[current_ip]},
-                                  timeout=45)
+            r = site_response.get(url2, headers=headers, proxies={"http": working_ip[current_ip],
+                                                                  "https": working_ip[current_ip]}, timeout=45)
             if e.extract(r.text)['reviews'] is None:
                 print('Amazon blocked so new ip')
                 print(e.extract(r.text))
@@ -326,6 +376,8 @@ def run_scrapping(url_to_scrape):
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
 
+    price = get_price(url_to_scrape)
+    print(price)
     all_pages = get_page_num(scrape_url + '1')  # appends the page number to the end of the url
     if all_pages > 100:
         all_pages = 100
