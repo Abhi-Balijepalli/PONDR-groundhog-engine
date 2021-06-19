@@ -14,8 +14,5 @@ GPT-3.py: answers questions using reviews as examples, need Open AI GPT-3 API ke
 
 api.py: communicates with the Pondr Admin API, make sure to download API and run locally
 
-have fun scrapping!
-
-![PONDR!](Pondr_logo.png)
 
 -T.S
