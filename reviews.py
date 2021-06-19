@@ -295,6 +295,7 @@ def run_scrapping(url_to_scrape):
     print(scrape_url)
     m = re.search('https://www.amazon.com/(.+?)/dp/', scrape_url)
     t = re.search('/dp/(.+?)/?_encoding', scrape_url)
+    productName = ""
     if m:
         productName = m.group(1)
     if t:
