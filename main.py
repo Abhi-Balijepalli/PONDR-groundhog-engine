@@ -1,3 +1,5 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 from threading import Thread
 import time
 from reviews import run_scrapping

@@ -1,4 +1,6 @@
+import os
 import openai
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 import json
 import time
 from jsonlines import jsonlines
