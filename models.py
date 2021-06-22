@@ -1,3 +1,4 @@
+import os
 import datetime
 import json
 import operator
@@ -15,7 +16,7 @@ from top2vec import Top2Vec
 from transformers import pipeline
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from api import send_data
-
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 today = date.today()
 
 
@@ -45,7 +46,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         whole_reviews.append(str(row[1]))  # adding the whole review to the list
         whole_review_date.append(str(row[2]))  # adding that review date to the list
         print(len(whole_reviews))
-    if len(whole_reviews) < 150:
+    if len(whole_reviews) < 205:
         whole_reviews_top2 = whole_reviews*10
 
     else:
