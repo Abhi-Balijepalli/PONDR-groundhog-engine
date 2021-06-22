@@ -22,6 +22,7 @@ today = date.today()
 
 def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
     nltk.download('wordnet')
+    nltk.download('punkt')
     wnl = nltk.WordNetLemmatizer()
     torch.cuda.empty_cache()
 
