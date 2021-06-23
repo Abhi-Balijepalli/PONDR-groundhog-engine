@@ -385,8 +385,8 @@ def run_scrapping(url_to_scrape):
     # price = get_price(url_to_scrape)
     # print(price)
     all_pages = get_page_num(scrape_url + '1')  # appends the page number to the end of the url
-    if all_pages > 100:
-        all_pages = 100
+    if all_pages > 500:
+        all_pages = 500
     print(all_pages)
 
     pages_per_thread = 1

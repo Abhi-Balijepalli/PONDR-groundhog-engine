@@ -91,10 +91,10 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
             sequence_to_classify = nltk.tokenize.sent_tokenize(row[1])
             for sen in sequence_to_classify:  # going through individual review sentences
                 classified_dict = classifier(sen, candidate_labels)  # runs zero-shot classifier models on sentence
-                topic_scores = classified_dict.get(
-                    'scores')  # gets the scores from the dictionary produced by running the model again
-                max_score_index, value = max(enumerate(topic_scores), key=operator.itemgetter(
-                    1))  # finds the max score of the model output scores
+                # gets the scores from the dictionary produced by running the model again
+                topic_scores = classified_dict.get('scores')
+                # finds the max score of the model output scores
+                max_score_index, value = max(enumerate(topic_scores), key=operator.itemgetter(1))
                 print(candidate_labels[max_score_index])
                 sen_topic_dict[candidate_labels[max_score_index]][0].append(
                     sen)  # adds values from csv to dictionary
@@ -431,7 +431,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
                 "date": str(today),
                 "category_data": full_cat_json,
                 "mean_sentiment": normalized_mean_sentiment,
-                "mean_star_rating": star_mean
+                "mean_star_rating": star_mean,
+                "images": df.images
             },
             "gpt3_form_id": upload['id'],
 
