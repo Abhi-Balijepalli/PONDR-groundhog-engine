@@ -316,6 +316,7 @@ def get_page_num(url2):
         r['author'] = r['author'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
         print(r)
         csv_outfile.append(r)
+        txt_outfile.append(r['content'] + "\n")
     global total_pages_scrapped
     total_pages_scrapped = total_pages_scrapped + 1
 
@@ -376,8 +377,8 @@ def run_scrapping(url_to_scrape):
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
 
-    price = get_price(url_to_scrape)
-    print(price)
+    # price = get_price(url_to_scrape)
+    # print(price)
     all_pages = get_page_num(scrape_url + '1')  # appends the page number to the end of the url
     if all_pages > 100:
         all_pages = 100

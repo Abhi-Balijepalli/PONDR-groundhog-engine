@@ -87,16 +87,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
     for row in review_data:  # going through reviews data
         if row != empty_list and row[1] != "":  # makes sure there isn't and empty row
             whole_review_sentiment.append(analyzer.polarity_scores(row[1])['compound'])
-            whole_classified_dict = classifier(row[1],
-                                               candidate_labels)  # runs zero-shot classifier models on whole review
-            topic_categories = whole_classified_dict.get('labels')  # gets the labels (categories) from dictionary
-            whole_topic_scores = whole_classified_dict.get('scores')
             # gets the scores from the dictionary produced by running the model again
-            whole_max_score_index, whole_review_max_value = max(enumerate(whole_topic_scores),
-                                                                key=operator.itemgetter(1))
-            # finds the max score of the model output scores
-            print("whole review topic " + str(topic_categories[whole_max_score_index]))
-            whole_review_category.append(topic_categories[whole_max_score_index])
             sequence_to_classify = nltk.tokenize.sent_tokenize(row[1])
             for sen in sequence_to_classify:  # going through individual review sentences
                 classified_dict = classifier(sen, candidate_labels)  # runs zero-shot classifier models on sentence
@@ -104,17 +95,17 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
                     'scores')  # gets the scores from the dictionary produced by running the model again
                 max_score_index, value = max(enumerate(topic_scores), key=operator.itemgetter(
                     1))  # finds the max score of the model output scores
-                print(topic_categories[max_score_index])
-                sen_topic_dict[topic_categories[max_score_index]][0].append(
+                print(candidate_labels[max_score_index])
+                sen_topic_dict[candidate_labels[max_score_index]][0].append(
                     sen)  # adds values from csv to dictionary
-                sen_topic_dict[topic_categories[max_score_index]][2].append(row[2])  # date
-                sen_topic_dict[topic_categories[max_score_index]][3].append(row[3])  # variant
-                sen_topic_dict[topic_categories[max_score_index]][4].append(row[4])  # images
-                sen_topic_dict[topic_categories[max_score_index]][5].append(row[5])  # verified
-                sen_topic_dict[topic_categories[max_score_index]][6].append(row[6])  # author
-                sen_topic_dict[topic_categories[max_score_index]][7].append(row[7])  # rating
-                sen_topic_dict[topic_categories[max_score_index]][8].append(row[8])  # product
-                sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
+                sen_topic_dict[candidate_labels[max_score_index]][2].append(row[2])  # date
+                sen_topic_dict[candidate_labels[max_score_index]][3].append(row[3])  # variant
+                sen_topic_dict[candidate_labels[max_score_index]][4].append(row[4])  # images
+                sen_topic_dict[candidate_labels[max_score_index]][5].append(row[5])  # verified
+                sen_topic_dict[candidate_labels[max_score_index]][6].append(row[6])  # author
+                sen_topic_dict[candidate_labels[max_score_index]][7].append(row[7])  # rating
+                sen_topic_dict[candidate_labels[max_score_index]][8].append(row[8])  # product
+                sen_topic_dict[candidate_labels[max_score_index]][9].append(row[9])  # url
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
@@ -438,7 +429,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
                 "topics": (', '.join(unique_topics[0:(len(unique_topics) - 1)])) + ', and ' +
                           (unique_topics[(len(unique_topics) - 1)]),
                 "date": str(today),
-                "category_data": full_cat_json
+                "category_data": full_cat_json,
+                "mean_sentiment": normalized_mean_sentiment
             },
             "gpt3_form_id": upload['id'],
 
