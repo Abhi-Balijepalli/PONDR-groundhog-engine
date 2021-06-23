@@ -431,6 +431,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
                 "date": str(today),
                 "category_data": full_cat_json,
                 "mean_sentiment": normalized_mean_sentiment
+                "mean_star_rating": star_mean
             },
             "gpt3_form_id": upload['id'],
 
