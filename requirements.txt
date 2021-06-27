@@ -3,9 +3,14 @@ openai~=0.6.3
 jsonlines~=2.0.0
 matplotlib~=3.3.4
 nltk~=3.5
+<<<<<<< HEAD
 numpy
 pandas
 python-Levenshtein
+=======
+numpy~=1.20.1
+pandas~=1.2.2
+>>>>>>> aee0fac786cdb5b8912925c64124abf47c80b951
 numba~=0.53.1
 six~=1.15.0
 top2vec~=1.0.21
