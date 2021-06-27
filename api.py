@@ -13,13 +13,13 @@ def send_data(id):
 
     print(type(package))
     # defining the api-endpoint
-    API_ENDPOINT = "http://127.0.0.1:8080/analyze"
+    API_ENDPOINT = "https://groundhog-api.azurewebsites.net/analyze"
 
     # data to be sent to api
 
     print(package)
     # sending post request and saving response as response object
-    r = requests.post('http://127.0.0.1:8080/analyze', json=package)
+    r = requests.post('https://groundhog-api.azurewebsites.net/analyze', json=package)
 
     # extracting response text
     pastebin_url = r.text
