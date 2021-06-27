@@ -390,6 +390,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         "data": {
             "product_id": product_id,
             "company_id": company_id,
+            "auth_key": "rJ8MBDy67q",
             "product_name": df.iloc[1, 8],
             "1": {
                 "title": "Sentiment Per Category",
