@@ -12,17 +12,11 @@ def main():
     print(products)
     for product in products:
         automate(product['url'], product['company_id'], product['product_id'], product['id'])
-        #thread = Thread(target=automate, args=(product['url'], product['company_id'], product['product_id'], product['id']))
-        #threads.append(thread)
-        #thread.start()
-        #time.sleep(60)
-    #for t in threads:
-     #   t.join()  # joins all started threads to find working ups
 
 
 def automate(url, company_id, product_id, id):
-    review_data, gpt3_data = run_scrapping(url)
-    run_models(review_data, gpt3_data, company_id, product_id, id)
+    review_data, gpt3_data, price, product_images = run_scrapping(url)
+    run_models(review_data, gpt3_data, company_id, product_id, id, price, product_images)
 
 
 if __name__ == "__main__":

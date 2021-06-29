@@ -1,3 +1,14 @@
 price:
-    css: 'td span[id="priceblock_dealprice"]'
+    css: 'span[id="priceblock_dealprice"]'
     type: Text
+price2:
+    css: 'span.a-size-medium.a-color-price'
+    type: Text
+price3:
+    css: 'span[class="a-size-mini olpWrapper"]'
+    type: Text
+image1:
+    css: 'div [id="landingImage"]'
+    type: Attribute
+    attribute: src
+

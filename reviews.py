@@ -9,6 +9,7 @@ from dateutil import parser as dateparser
 from lxml.html import fromstring
 from selectorlib import Extractor
 import sys
+import json
 
 total_pages_scrapped = 0
 old_randints = [None]  # empty list for now, see end of run_scrapping() for more
@@ -16,10 +17,13 @@ csv_outfile = []
 txt_outfile = []
 working_ip = []
 proxy_pool = []
+product_images = []
+price = ""
 scrape_url = ""
 original_url = ""
 page_percentage = 0
 first_page_data = ""
+all_pages = 0
 # This data was created by using the curl method explained above
 headers_list = [
     # Firefox 77 Mac
@@ -187,8 +191,12 @@ def scrape(url2, ip_index, thread_number):
         return e.extract(r.text)
 
 
-def get_price(front_url):
-    print("@@@@@@ getting price @@@@@@")
+def get_product_page(front_url):
+    global price
+    global product_images
+
+    print("@@@@@@ getting product page @@@@@@")
+
     e = Extractor.from_yaml_file('front_selector.yml')
     global headers
     # Create ordered dict from Headers above
@@ -214,13 +222,16 @@ def get_price(front_url):
         try:
             r = site_response.get(front_url, headers=headers, proxies={"http": working_ip[current_ip],
                                                                        "https": working_ip[current_ip]}, timeout=45)
-            if e.extract(r.text)['price'] is None:
+            print('this is the if statement')
+            data = e.extract(r.text)
+            if data['price'] is None and data['price2'] is None and data['price3'] is None:
                 print('Amazon blocked so new ip')
                 print(e.extract(r.text))
                 current_ip = random.randint(0, len(working_ip) - 1)
                 r = ''
             else:
                 break
+
         except:
             sleep_time = 5
             print("Connection refused by the server..")
@@ -236,7 +247,20 @@ def get_price(front_url):
                 stop_count = 0
             continue
     data = e.extract(r.text)
-    return str(data['price'])
+    print(data)
+    if data['price2'] is not None:
+        price = data['price2']
+    elif data['price1'] is not None:
+        price = data['price1']
+    elif data['price3'] is not None:
+        price = data['price3']
+
+    link = str(data['image1'])
+    text_list = link.split('.__AC', 1)
+    print(text_list)
+    product_images.append(text_list[0] + "._AC_SL1500_.jpg")
+    print(price)
+    print(product_images)
 
 
 def get_page_num(url2):
@@ -328,12 +352,8 @@ def get_page_num(url2):
     print(search_string)
     page_int = int(float(search_string))
     page_int = int(page_int / 10) + 1
-    # if page_int <= 100:
-    #    page_int = int(page_int / 10) * 10
-    # elif page_int > 100:
-    #    page_int = page_int / 10
-    #    page_int = round(page_int / 10) * 10
-    return page_int
+    global all_pages
+    all_pages = page_int
 
 
 def run_scrapping(url_to_scrape):
@@ -341,6 +361,7 @@ def run_scrapping(url_to_scrape):
     global thread  # this is global for joining later
     global old_randints  # including old_randints as global
     global proxy_pool
+    global all_pages
     scrape_url = url_to_scrape
     scrape_url = scrape_url.rstrip()
     print(scrape_url)
@@ -357,8 +378,12 @@ def run_scrapping(url_to_scrape):
 
         else:
             t = re.search('product/(.+?)/ref', scrape_url)
-            productId = t.group(1)
-            productId = productId + '/'
+            if t:
+                productId = t.group(1)
+                productId = productId + '/'
+            else:
+                text_list = scrape_url.split('amazon.com/dp/', 1)
+                productId = text_list[1]
 
 
     scrape_url = 'https://www.amazon.com/product-reviews/' + productId + 'ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
@@ -382,11 +407,13 @@ def run_scrapping(url_to_scrape):
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
 
-    # price = get_price(url_to_scrape)
-    # print(price)
-    all_pages = get_page_num(scrape_url + '1')  # appends the page number to the end of the url
-    if all_pages > 500:
-        all_pages = 500
+    product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
+    product_page_thread.start()
+    product_page_thread.join()
+    get_page_num(scrape_url + '1')
+
+    if all_pages > 100:
+        all_pages = 100
     print(all_pages)
 
     pages_per_thread = 1
@@ -412,7 +439,7 @@ def run_scrapping(url_to_scrape):
     for t in scrape_threads:
         t.join()
 
-    return csv_outfile, txt_outfile
+    return csv_outfile, txt_outfile, price, product_images
 
 
 def collect_data(lower_page, higher_page, all_pages, thread_number):

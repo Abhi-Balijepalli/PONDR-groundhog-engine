@@ -19,7 +19,7 @@ from api import send_data
 today = date.today()
 
 
-def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
+def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, product_images):
     nltk.download('wordnet')
     wnl = nltk.WordNetLemmatizer()
     torch.cuda.empty_cache()
@@ -45,12 +45,13 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
         whole_reviews.append(str(row[1]))  # adding the whole review to the list
         whole_review_date.append(str(row[2]))  # adding that review date to the list
         print(len(whole_reviews))
-    if len(whole_reviews) < 150:
+    if len(whole_reviews) <= 200:
         whole_reviews_top2 = whole_reviews * 10
 
     else:
         whole_reviews_top2 = whole_reviews
-
+    print(len(whole_reviews_top2))
+    print(len(whole_reviews))
     unsupervised_model = Top2Vec(whole_reviews_top2, min_count=10, embedding_model='universal-sentence-encoder')
     # runs model and gets topics from sentence list
     topic_words, word_scores, topic_nums = unsupervised_model.get_topics(unsupervised_model.get_num_topics())
@@ -86,26 +87,30 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
     # running model 1, topic analysis
     for row in review_data:  # going through reviews data
         if row != empty_list and row[1] != "":  # makes sure there isn't and empty row
-            whole_review_sentiment.append(analyzer.polarity_scores(row[1])['compound'])
-            # gets the scores from the dictionary produced by running the model again
             sequence_to_classify = nltk.tokenize.sent_tokenize(row[1])
+            whole_review_sentiment.append(analyzer.polarity_scores(row[1])['compound'])
             for sen in sequence_to_classify:  # going through individual review sentences
-                classified_dict = classifier(sen, candidate_labels)  # runs zero-shot classifier models on sentence
+                # runs zero-shot classifier models on whole reviews
+                classified_dict = classifier(sen, candidate_labels)
                 # gets the scores from the dictionary produced by running the model again
                 topic_scores = classified_dict.get('scores')
+                topic_categories = classified_dict.get('labels')
+                print('classified dict' + str(classified_dict))
                 # finds the max score of the model output scores
-                max_score_index, value = max(enumerate(topic_scores), key=operator.itemgetter(1))
-                print(candidate_labels[max_score_index])
-                sen_topic_dict[candidate_labels[max_score_index]][0].append(
-                    sen)  # adds values from csv to dictionary
-                sen_topic_dict[candidate_labels[max_score_index]][2].append(row[2])  # date
-                sen_topic_dict[candidate_labels[max_score_index]][3].append(row[3])  # variant
-                sen_topic_dict[candidate_labels[max_score_index]][4].append(row[4])  # images
-                sen_topic_dict[candidate_labels[max_score_index]][5].append(row[5])  # verified
-                sen_topic_dict[candidate_labels[max_score_index]][6].append(row[6])  # author
-                sen_topic_dict[candidate_labels[max_score_index]][7].append(row[7])  # rating
-                sen_topic_dict[candidate_labels[max_score_index]][8].append(row[8])  # product
-                sen_topic_dict[candidate_labels[max_score_index]][9].append(row[9])  # url
+                max_score_index = topic_scores.index(max(topic_scores))
+                print('max_index' + str(max_score_index))
+                print('index' + str(max_score_index))
+                print(topic_categories[max_score_index])
+                print('topic scores ' + str(topic_scores))
+                sen_topic_dict[topic_categories[max_score_index]][0].append(sen)  # adds values from csv to dictionary
+                sen_topic_dict[topic_categories[max_score_index]][2].append(row[2])  # date
+                sen_topic_dict[topic_categories[max_score_index]][3].append(row[3])  # variant
+                sen_topic_dict[topic_categories[max_score_index]][4].append(row[4])  # images
+                sen_topic_dict[topic_categories[max_score_index]][5].append(row[5])  # verified
+                sen_topic_dict[topic_categories[max_score_index]][6].append(row[6])  # author
+                sen_topic_dict[topic_categories[max_score_index]][7].append(row[7])  # rating
+                sen_topic_dict[topic_categories[max_score_index]][8].append(row[8])  # product
+                sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
@@ -379,6 +384,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
 
     package = {
         "data": {
+            "auth_key": "rJ8MBDy67q",
             "product_id": product_id,
             "company_id": company_id,
             "product_name": df.iloc[1, 8],
@@ -425,14 +431,15 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id):
             },
             "summary": {
                 "nps": round(net_promoter_score, 3),
-                "num_of_reviews": str(len(whole_reviews)),
+                "num_of_reviews": int(len(whole_reviews)),
                 "topics": (', '.join(unique_topics[0:(len(unique_topics) - 1)])) + ', and ' +
                           (unique_topics[(len(unique_topics) - 1)]),
                 "date": str(today),
                 "category_data": full_cat_json,
                 "mean_sentiment": normalized_mean_sentiment,
                 "mean_star_rating": star_mean,
-                "images": list(df.images)
+                "images": product_images,
+                "price": str(price)
             },
             "gpt3_form_id": upload['id'],
 
