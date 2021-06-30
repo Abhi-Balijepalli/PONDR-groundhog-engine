@@ -45,9 +45,10 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
         whole_reviews.append(str(row[1]))  # adding the whole review to the list
         whole_review_date.append(str(row[2]))  # adding that review date to the list
         print(len(whole_reviews))
-    if len(whole_reviews) <= 200:
+    if len(whole_reviews) <=50:
+        whole_reviews_top2 = whole_reviews * 100
+    elif len(whole_reviews) <= 200:
         whole_reviews_top2 = whole_reviews * 10
-
     else:
         whole_reviews_top2 = whole_reviews
     print(len(whole_reviews_top2))

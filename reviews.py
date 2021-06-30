@@ -1,15 +1,15 @@
 import random
 import re
+import sys
 import time
 from collections import OrderedDict
 from itertools import cycle
 from threading import Thread
+
 import requests
 from dateutil import parser as dateparser
 from lxml.html import fromstring
 from selectorlib import Extractor
-import sys
-import json
 
 total_pages_scrapped = 0
 old_randints = [None]  # empty list for now, see end of run_scrapping() for more
@@ -24,6 +24,7 @@ original_url = ""
 page_percentage = 0
 first_page_data = ""
 all_pages = 0
+got_product_page = False
 # This data was created by using the curl method explained above
 headers_list = [
     # Firefox 77 Mac
@@ -96,7 +97,7 @@ def get_proxies():  # getting proxies by scrapping the site for free
 
 def get_pro_proxies():  # getting proxies from the paid api
     proxies = set()
-    url5 = 'http://list.didsoft.com/get?email=tomcs333@gmail.com&pass=jfapqx&pid=http3000&showcountry=no'
+    url5 = 'http://list.didsoft.com/get?email=thomas@letspondr.com&pass=gfmubt&pid=http3000&showcountry=no'
     response = requests.get(url5)
     ip_string = response.text
     for proxy in ip_string.splitlines():
@@ -194,45 +195,68 @@ def scrape(url2, ip_index, thread_number):
 def get_product_page(front_url):
     global price
     global product_images
+    global got_product_page
 
     print("@@@@@@ getting product page @@@@@@")
 
     e = Extractor.from_yaml_file('front_selector.yml')
-    global headers
-    # Create ordered dict from Headers above
-    ordered_headers_list = []
-
-    for headers in headers_list:
-        h = OrderedDict()
-        for header, value in headers.items():
-            h[header] = value
-        ordered_headers_list.append(h)
-    # Pick a random browser headers
-    headers = random.choice(headers_list)
+    product_headers = [
+    {
+        'Authority': 'www.amazon.com',
+        'Pragma': 'no-cache',
+        'Cache-control': 'no-cache',
+        'Dnt': '1',
+        'Upgrade-insecure-requests': '1',
+        'User-agent': 'Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Sec-fetch-site': 'none',
+        'Sec-fetch-mode': 'navigate',
+        'Sec-fetch-dest': 'document',
+        "Referer": "https://www.google.com/",
+        "Accept-Encoding": "gzip, deflate, br",
+        'Accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+    },
+    {
+        'Authority': 'www.amazon.com',
+        'Pragma': 'no-cache',
+        'Cache-control': 'no-cache',
+        'Dnt': '1',
+        'Upgrade-insecure-requests': '1',
+        'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Sec-fetch-site': 'none',
+        'Sec-fetch-mode': 'navigate',
+        'Sec-fetch-dest': 'document',
+        "Referer": "https://www.google.com/",
+        "Accept-Encoding": "gzip, deflate, br",
+        'Accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+    }]
     # Create a request session
     site_response = requests.Session()
-    site_response.headers = headers
     # Download the page using requests
     print("Downloading %s" % front_url)
     current_ip = random.randint(0, len(working_ip) - 1)
     print('current proxy ' + working_ip[current_ip])
     stop_count = 0
+    headers = random.choice(product_headers)
     r = ''
     while r == '':
         try:
             r = site_response.get(front_url, headers=headers, proxies={"http": working_ip[current_ip],
-                                                                       "https": working_ip[current_ip]}, timeout=45)
-            print('this is the if statement')
+                                                                       "https": working_ip[current_ip]})
             data = e.extract(r.text)
-            if data['price'] is None and data['price2'] is None and data['price3'] is None:
+            if data['price'] is None and data['image1'] is None:
                 print('Amazon blocked so new ip')
                 print(e.extract(r.text))
                 current_ip = random.randint(0, len(working_ip) - 1)
+                headers = random.choice(product_headers)
                 r = ''
             else:
                 break
 
         except:
+            if got_product_page:
+                break
             sleep_time = 5
             print("Connection refused by the server..")
             print("Let me sleep for " + str(sleep_time) + " seconds")
@@ -246,18 +270,15 @@ def get_product_page(front_url):
                 print('to many stops, reassigning randint')
                 stop_count = 0
             continue
+    if got_product_page:
+        print('exiting product scraping!!!!!!!!!!!!!!!!!!!!!')
+        sys.exit()
     data = e.extract(r.text)
     print(data)
-    if data['price2'] is not None:
-        price = data['price2']
-    elif data['price1'] is not None:
-        price = data['price1']
-    elif data['price3'] is not None:
-        price = data['price3']
-
+    price = data['price']
+    print(data['image1'])
     link = str(data['image1'])
     text_list = link.split('.__AC', 1)
-    print(text_list)
     product_images.append(text_list[0] + "._AC_SL1500_.jpg")
     print(price)
     print(product_images)
@@ -371,7 +392,7 @@ def run_scrapping(url_to_scrape):
         productId = t.group(1)
         productId = productId.replace('?', '')
     else:
-        t = re.search('/dp/(.+?)/ref', scrape_url)
+        t = re.search('/dp/(.+?)/', scrape_url)
         if t:
             productId = t.group(1)
             productId = productId + '/'
@@ -407,9 +428,16 @@ def run_scrapping(url_to_scrape):
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
 
+    #productThreads = []
+    #product_index = 0
+    #while product_index < 11:
+    #    product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
+    #    productThreads.append(product_page_thread)
+    #    product_page_thread.start()
+    #    product_index = product_index + 1
     product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
     product_page_thread.start()
-    product_page_thread.join()
+    time.sleep(1)
     get_page_num(scrape_url + '1')
 
     if all_pages > 100:
@@ -439,6 +467,10 @@ def run_scrapping(url_to_scrape):
     for t in scrape_threads:
         t.join()
 
+    product_page_thread.join()
+    #for t in productThreads:
+    #    t.join()
+
     return csv_outfile, txt_outfile, price, product_images
 
 
@@ -463,7 +495,7 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
                         ip_threads = []  # lists of threads to join
                         high_i = 2
                         low_i = 1
-                        while low_i < 51:  # change number here for num ips checked
+                        while low_i < 76:  # change number here for num ips checked
                             ip_thread = Thread(target=find_ip, args=(low_i, high_i))
                             ip_threads.append(ip_thread)
                             ip_thread.start()
