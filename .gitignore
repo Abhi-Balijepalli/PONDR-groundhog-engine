@@ -4,3 +4,7 @@ plot7.png
 gpt2training.txt
 data.csv
 Report.pdf
+*.jsonl
+*.json
+upload.jsonl
+*.json
