@@ -12,6 +12,7 @@ def main():
     print(products)
     for product in products:
         automate(product['url'], product['company_id'], product['product_id'], product['id'])
+        break
 
 
 def automate(url, company_id, product_id, id):

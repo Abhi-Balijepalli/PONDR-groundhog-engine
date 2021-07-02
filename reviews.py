@@ -245,7 +245,7 @@ def get_product_page(front_url):
             r = site_response.get(front_url, headers=headers, proxies={"http": working_ip[current_ip],
                                                                        "https": working_ip[current_ip]})
             data = e.extract(r.text)
-            if data['price'] is None and data['image1'] is None:
+            if data['price'] is None or data['image1'] is None:
                 print('Amazon blocked so new ip')
                 print(e.extract(r.text))
                 current_ip = random.randint(0, len(working_ip) - 1)
