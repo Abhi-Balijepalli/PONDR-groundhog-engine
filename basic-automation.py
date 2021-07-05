@@ -1,9 +1,10 @@
 import schedule
 import sys
+import os
 import time
 from main import main
 
-schedule.every().hour(6).do(main)
+schedule.every(6).hours.do(main)
 
 while True:
     # is pending to run or not
