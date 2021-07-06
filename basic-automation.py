@@ -18,4 +18,4 @@
 
 # if __name__ == "__main__":
 #     run = Scheduler()
-#     run.scheule_a_job()
+#     run.schedule_a_job()
