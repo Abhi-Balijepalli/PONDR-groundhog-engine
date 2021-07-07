@@ -1,21 +1,12 @@
-# import schedule
-# import os
-# import sys
-# import os
-# import time
-# from main import main
+from crontab import CronTab
+cron = CronTab(user='username')
+job1 = cron.new(command='python3 main.py')
+job1.minute.every(30)
 
+for item in cron:
+    print(item)
+job.clear()
 
-# class Scheduler():
-#     def trigger_main(self):
-#         return main()
-#     def schedule_a_job():
-#         schedule.every(6).hours.do(self.trigger_main)
-#         while True:
-#             schedule.run_pending()
-#             time.sleep(1)
-
-
-# if __name__ == "__main__":
-#     run = Scheduler()
-#     run.schedule_a_job()
+for item in cron:
+    print(item)
+cron.write()
