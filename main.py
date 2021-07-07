@@ -2,6 +2,8 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 from threading import Thread
 import time
+import sys
+from apscheduler.schedulers.blocking import BlockingScheduler
 from reviews import run_scrapping
 from models import run_models
 from get_api import get_products
@@ -23,4 +25,7 @@ def automate(url, company_id, product_id, id):
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    scheduler = BlockingScheduler()
+    scheduler.add_job(main,'interval', minutes=5)
+    scheduler.start()
