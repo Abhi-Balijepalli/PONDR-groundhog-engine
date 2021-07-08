@@ -11,6 +11,17 @@ from get_api import get_products
 from api import send_data
 
 
+def scheduler_run_forever():
+    try:
+        scheduler = BlockingScheduler()
+        scheduler.add_job(main, 'interval', minutes=5)
+        scheduler.start()
+    except:
+        print('crashed :(')
+        scheduler_run_forever()
+
+
+
 def main():
     threads = []
     products = get_products()
@@ -26,7 +37,4 @@ def automate(url, company_id, product_id, id):
 
 
 if __name__ == "__main__":
-    # main()
-    scheduler = BlockingScheduler()
-    scheduler.add_job(main, 'interval', minutes=5)
-    scheduler.start()
+    scheduler_run_forever()

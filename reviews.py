@@ -5,7 +5,6 @@ import time
 from collections import OrderedDict
 from itertools import cycle
 from threading import Thread
-
 import requests
 from dateutil import parser as dateparser
 from lxml.html import fromstring
