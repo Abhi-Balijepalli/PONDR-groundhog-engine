@@ -19,5 +19,5 @@ def some_job():
     return main()
 
 scheduler = BlockingScheduler()
-scheduler.add_job(main, 'interval', minutes=30)
+scheduler.add_job(some_job, 'interval', minutes=28)
 scheduler.start()
