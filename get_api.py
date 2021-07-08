@@ -6,7 +6,7 @@ import csv
 
 def get_products():
     # defining the api-endpoint
-    API_ENDPOINT = "https://groundhog-api.azurewebsites.net/product/waitlist"
+    API_ENDPOINT = "https://groundhog.letspondr.com/product/waitlist"
 
     # data to be sent to api
 
