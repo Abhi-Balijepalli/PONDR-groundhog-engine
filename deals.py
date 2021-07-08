@@ -51,7 +51,6 @@ def find_ip(lower_range, upper_range):
 def get_deals_of_the_day(front_url):
     print("@@@@@@ getting deals of the day page @@@@@@")
 
-    e = Extractor.from_yaml_file('dotd_selector.yml')
     product_headers = [
         {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
@@ -118,7 +117,6 @@ def get_deals_of_the_day(front_url):
             if "assets.mountWidget(" not in response:
                 print('Amazon blocked so new ip')
                 print(r.text)
-                print(e.extract(r.text))
                 current_ip = random.randint(0, len(working_ip) - 1)
                 headers = random.choice(product_headers)
                 r = ''
@@ -184,7 +182,7 @@ def main():
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
 
-    get_deals_of_the_day('https://www.amazon.com/gp/goldbox')
+    get_deals_of_the_day('https://www.amazon.com/events/schooldeals')
     #'https://www.amazon.com/events/collegedeals?ref=deals_deals_deals-grid_slot-15_39f3_dt_dcell_img_2_024739bb' for college deals of the day
 
 if __name__ == "__main__":
