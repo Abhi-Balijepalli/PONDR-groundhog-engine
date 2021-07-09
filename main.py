@@ -14,7 +14,7 @@ from api import send_data
 def scheduler_run_forever():
     try:
         scheduler = BlockingScheduler()
-        scheduler.add_job(main, 'interval', minutes=5)
+        scheduler.add_job(main, 'interval', minutes=15)
         scheduler.start()
     except:
         print('crashed :(')
