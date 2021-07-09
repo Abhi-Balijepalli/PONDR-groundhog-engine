@@ -14,7 +14,15 @@ from api import send_data
 def scheduler_run_forever():
     try:
         scheduler = BlockingScheduler()
-        scheduler.add_job(main, 'interval', minutes=15)
+
+        # Run every 15mins all day (Works!)
+        # scheduler.add_job(main, 'interval', minutes=15)
+
+        # Run every 15mins from 6:15am - 11:15pm a day job Method (Testing right now)
+        scheduler.add_job(main, 'cron', hour='6-23', minutes='*/15', args=['enterprise-automation'])
+        
+        # Run once a day at 1am to 5am job Method (Needs to be tested)
+        # scheduler.add_job(job, 'cron', hour='1-5', args=['amazon-deals'])
         scheduler.start()
     except:
         print('crashed :(')
@@ -22,7 +30,11 @@ def scheduler_run_forever():
 
 
 
-def main():
+def main(text):
+    
+    t = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    print('{} --- {}'.format(text, t))
+
     threads = []
     products = get_products()
     print(products)
