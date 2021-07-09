@@ -5,7 +5,6 @@ from itertools import cycle
 from threading import Thread
 import requests
 from lxml.html import fromstring
-from selectorlib import Extractor
 import json
 
 working_ip = []
