@@ -6,6 +6,7 @@ nltk~=3.5
 numpy
 schedule
 selenium
+text2emotion
 pandas
 python-Levenshtein
 apscheduler
