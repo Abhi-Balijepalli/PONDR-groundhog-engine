@@ -16,11 +16,13 @@ from top2vec import Top2Vec
 from transformers import pipeline
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from api import send_data
+import text2emotion as te
+
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 today = date.today()
 
 
-def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, product_images):
+def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, product_images, short_description, long_description):
     nltk.download('wordnet')
     nltk.download('punkt')
     wnl = nltk.WordNetLemmatizer()
@@ -81,7 +83,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     # making topic dictionary for later use in zero-shot
     sen_topic_dict = {}
     for label in candidate_labels:
-        sen_topic_dict[label] = [], [], [], [], [], [], [], [], [], []
+        sen_topic_dict[label] = [], [], [], [], [], [], [], [], [], [], [], []
 
     print(sen_topic_dict)
 
@@ -105,6 +107,10 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 print('index' + str(max_score_index))
                 print(topic_categories[max_score_index])
                 print('topic scores ' + str(topic_scores))
+                # find emotion of the text
+                result = te.get_emotion(sen)
+                max_key = str(max(result, key=result.get))
+
                 sen_topic_dict[topic_categories[max_score_index]][0].append(sen)  # adds values from csv to dictionary
                 sen_topic_dict[topic_categories[max_score_index]][2].append(row[2])  # date
                 sen_topic_dict[topic_categories[max_score_index]][3].append(row[3])  # variant
@@ -114,6 +120,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 sen_topic_dict[topic_categories[max_score_index]][7].append(row[7])  # rating
                 sen_topic_dict[topic_categories[max_score_index]][8].append(row[8])  # product
                 sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
+                sen_topic_dict[topic_categories[max_score_index]][10].append(max_key)  # emotion
+                sen_topic_dict[topic_categories[max_score_index]][11].append(str(result[max_key]))  # emotion percentage
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
@@ -143,7 +151,9 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 "rating": sen_topic_dict[key][7],
                 "product": sen_topic_dict[key][8],
                 "url": sen_topic_dict[key][9],
-                "category": key
+                "category": key,
+                "emotion": sen_topic_dict[key][10],
+                "emotion_percentage": sen_topic_dict[key][11]
             }))
 
     # Combine DFs
@@ -343,10 +353,12 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
 
     for label in candidate_labels:
         full_cat_json[label] = []
-    twoD_cat_list = list(zip(df.category, datetime_dates, df.score, df.sentence))  # zipping
+    twoD_cat_list = list(zip(df.category, datetime_dates, df.score, df.sentence, df.emotion, df.emotion_percentage))  # zipping
     twoD_cat_list = list(sorted(twoD_cat_list, key=lambda x: datetime.datetime.strptime(x[1], '%Y-%m-%d')))
     unzipped_object = zip(*twoD_cat_list)
     unzipped_list = list(unzipped_object)
+    emotion_percentage_list = unzipped_list[5]
+    emotion_list = unzipped_list[4]
     sentence_list = unzipped_list[3]
     score_list = unzipped_list[2]
     date_list = unzipped_list[1]
@@ -354,7 +366,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
 
     for i in range(0, len(whole_reviews) - 1):
         full_cat_json[cat_list[i]].append(
-            {"date": date_list[i], "score": score_list[i], "review": sentence_list[i]})
+            {"date": date_list[i], "score": score_list[i], "review": sentence_list[i], "emotion": emotion_list[i], "emotion_percentage": emotion_percentage_list[i]})
     full_cat_json = json.dumps(full_cat_json, indent=1)
     full_cat_json = json.loads(full_cat_json)
     print("full cat df " + str(type(full_cat_json)))
@@ -390,7 +402,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
             "auth_key": "rJ8MBDy67q",
             "product_id": product_id,
             "company_id": company_id,
-            "auth_key": "rJ8MBDy67q",
             "product_name": df.iloc[1, 8],
             "1": {
                 "title": "Sentiment Per Category",
@@ -443,7 +454,9 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 "mean_sentiment": normalized_mean_sentiment,
                 "mean_star_rating": star_mean,
                 "images": product_images,
-                "price": str(price)
+                "price": str(price),
+                "short_description": short_description,
+                "long_description": long_description
             },
             "gpt3_form_id": upload['id'],
 

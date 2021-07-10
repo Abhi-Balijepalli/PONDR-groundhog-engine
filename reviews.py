@@ -9,6 +9,10 @@ import requests
 from dateutil import parser as dateparser
 from lxml.html import fromstring
 from selectorlib import Extractor
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 total_pages_scrapped = 0
 old_randints = [None]  # empty list for now, see end of run_scrapping() for more
@@ -16,14 +20,13 @@ csv_outfile = []
 txt_outfile = []
 working_ip = []
 proxy_pool = []
-product_images = []
-price = ""
 scrape_url = ""
 original_url = ""
 page_percentage = 0
 first_page_data = ""
 all_pages = 0
 got_product_page = False
+product_page_dict = []
 # This data was created by using the curl method explained above
 headers_list = [
     # Firefox 77 Mac
@@ -192,95 +195,64 @@ def scrape(url2, ip_index, thread_number):
 
 
 def get_product_page(front_url):
-    global price
-    global product_images
-    global got_product_page
+    global product_page_dict
 
+    product_info = {}
+    product_info['name'] = 0
+    PROXY = working_ip[random.randint(0, len(working_ip) - 1)]
     print("@@@@@@ getting product page @@@@@@")
 
-    e = Extractor.from_yaml_file('front_selector.yml')
-    product_headers = [
-    {
-        'Authority': 'www.amazon.com',
-        'Pragma': 'no-cache',
-        'Cache-control': 'no-cache',
-        'Dnt': '1',
-        'Upgrade-insecure-requests': '1',
-        'User-agent': 'Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'Sec-fetch-site': 'none',
-        'Sec-fetch-mode': 'navigate',
-        'Sec-fetch-dest': 'document',
-        "Referer": "https://www.google.com/",
-        "Accept-Encoding": "gzip, deflate, br",
-        'Accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
-    },
-    {
-        'Authority': 'www.amazon.com',
-        'Pragma': 'no-cache',
-        'Cache-control': 'no-cache',
-        'Dnt': '1',
-        'Upgrade-insecure-requests': '1',
-        'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'Sec-fetch-site': 'none',
-        'Sec-fetch-mode': 'navigate',
-        'Sec-fetch-dest': 'document',
-        "Referer": "https://www.google.com/",
-        "Accept-Encoding": "gzip, deflate, br",
-        'Accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
-    }]
-    # Create a request session
-    site_response = requests.Session()
-    # Download the page using requests
-    print("Downloading %s" % front_url)
-    current_ip = random.randint(0, len(working_ip) - 1)
-    print('current proxy ' + working_ip[current_ip])
-    stop_count = 0
-    headers = random.choice(product_headers)
-    r = ''
-    while r == '':
+    while product_info['name'] == 0:
         try:
-            r = site_response.get(front_url, headers=headers, proxies={"http": working_ip[current_ip],
-                                                                       "https": working_ip[current_ip]})
-            data = e.extract(r.text)
-            if data['image1'] is None:
-                print('Amazon blocked so new ip')
-                print(e.extract(r.text))
-                current_ip = random.randint(0, len(working_ip) - 1)
-                headers = random.choice(product_headers)
-                r = ''
-            else:
-                break
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--proxy-server=%s' % PROXY)
+            driver = webdriver.Chrome(chrome_options=chrome_options)
 
+            print('This is gonna be LEGEN... wait for it:')
+            url = front_url
+            driver.get(url)
+            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
+            try:
+                name = driver.find_element_by_xpath('//span[@id="productTitle"]')
+                product_info['name'] = name.text.strip()
+            except:
+                product_info['name'] = 0
+            try:
+                price = driver.find_element_by_xpath("(//span[contains(@class,'a-color-price')])[1]")
+                product_info['price'] = price.text
+            except:
+                product_info['price'] = 0
+            try:
+                category = driver.find_element_by_xpath("(//span[@class='a-list-item']/a)[last()]")
+                product_info['category'] = category.text.strip()
+            except:
+                product_info['category'] = 0
+            try:
+                feature_bullets = driver.find_element_by_xpath('//*[@id="feature-bullets"]')
+                product_info['feature_bullets'] = feature_bullets.text
+            except:
+                product_info['description'] = 0
+            try:
+                images = [my_elem.get_attribute("src") for my_elem in WebDriverWait(driver, 20).until(
+                    EC.visibility_of_all_elements_located(
+                        (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
+                product_info['images'] = images
+            except:
+                product_info['images'] = 0
+            try:
+                long_description = driver.find_element_by_xpath(
+                    '/html/body/div[1]/div[3]/div[9]/div[28]/div/div[2]/div/div/div/div[2]/p')
+                product_info['long_description'] = long_description.text
+            except:
+                product_info['long_description'] = 0
         except:
-            if got_product_page:
-                break
-            sleep_time = 5
-            print("Connection refused by the server..")
-            print("Let me sleep for " + str(sleep_time) + " seconds")
-            print("ZZzzzz...")
-            time.sleep(sleep_time)
-            print("Was a nice sleep, now let me continue...")
-            stop_count = stop_count + 1
-            print("stop count " + str(stop_count))
-            if stop_count > 3:
-                current_ip = random.randint(0, len(working_ip) - 1)  # try to assign this to the global ip array
-                print('to many stops, reassigning randint')
-                stop_count = 0
-            continue
-    if got_product_page:
-        print('exiting product scraping!!!!!!!!!!!!!!!!!!!!!')
-        sys.exit()
-    data = e.extract(r.text)
-    print(data)
-    price = data['price']
-    print(data['image1'])
-    link = str(data['image1'])
-    text_list = link.split('.__AC', 1)
-    product_images.append(text_list[0] + "._AC_SL1500_.jpg")
-    print(price)
-    print(product_images)
+            print('proxy took to long, trying new proxy')
+            PROXY = working_ip[random.randint(0, len(working_ip) - 1)]
+
+    product_page_dict.append(product_info)  # Append scrape to dictionary
+    print(str(len(product_page_dict)) + ' . ', end='')  # print the current length of the scrapes
+
+    print(product_page_dict)
 
 
 def get_page_num(url2):
@@ -405,7 +377,6 @@ def run_scrapping(url_to_scrape):
                 text_list = scrape_url.split('amazon.com/dp/', 1)
                 productId = text_list[1]
 
-
     scrape_url = 'https://www.amazon.com/product-reviews/' + productId + 'ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
 
     proxies = get_proxies()
@@ -427,15 +398,16 @@ def run_scrapping(url_to_scrape):
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
 
-    #productThreads = []
-    #product_index = 0
-    #while product_index < 11:
+    # productThreads = []
+    # product_index = 0
+    # while product_index < 11:
     #    product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
     #    productThreads.append(product_page_thread)
     #    product_page_thread.start()
     #    product_index = product_index + 1
-    product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
-    product_page_thread.start()
+    # product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
+    # product_page_thread.start()
+    get_product_page(url_to_scrape)
     time.sleep(1)
     get_page_num(scrape_url + '1')
 
@@ -466,11 +438,11 @@ def run_scrapping(url_to_scrape):
     for t in scrape_threads:
         t.join()
 
-    product_page_thread.join()
-    #for t in productThreads:
+    # for t in productThreads:
     #    t.join()
 
-    return csv_outfile, txt_outfile, price, product_images
+    return csv_outfile, txt_outfile, product_page_dict[0]['price'], product_page_dict[0]['images'], \
+           product_page_dict[0]['feature_bullets'], product_page_dict[0]['long_description']
 
 
 def collect_data(lower_page, higher_page, all_pages, thread_number):

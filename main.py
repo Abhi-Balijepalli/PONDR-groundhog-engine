@@ -44,8 +44,8 @@ def main(text):
 
 
 def automate(url, company_id, product_id, id):
-    review_data, gpt3_data, price, product_images = run_scrapping(url)
-    run_models(review_data, gpt3_data, company_id, product_id, id, price, product_images)
+    review_data, gpt3_data, price, product_images, short_description, long_description = run_scrapping(url)
+    run_models(review_data, gpt3_data, company_id, product_id, id, price, product_images, short_description, long_description)
 
 
 if __name__ == "__main__":
