@@ -358,26 +358,15 @@ def run_scrapping(url_to_scrape):
     scrape_url = scrape_url.rstrip()
     print(scrape_url)
 
-    t = re.search('/dp/(.+?)/?_encoding', scrape_url)
-    if t:
-        productId = t.group(1)
-        productId = productId.replace('?', '')
-    else:
-        t = re.search('/dp/(.+?)/', scrape_url)
-        if t:
-            productId = t.group(1)
-            productId = productId + '/'
+    if '/dp/' in scrape_url:
+        end_of_link = scrape_url.split('/dp/')[1]
+        productId = end_of_link[0:10]
+    elif 'product/' in scrape_url:
+        end_of_link = scrape_url.split('product/')[1]
+        productId = end_of_link[0:10]
 
-        else:
-            t = re.search('product/(.+?)/ref', scrape_url)
-            if t:
-                productId = t.group(1)
-                productId = productId + '/'
-            else:
-                text_list = scrape_url.split('amazon.com/dp/', 1)
-                productId = text_list[1]
 
-    scrape_url = 'https://www.amazon.com/product-reviews/' + productId + 'ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
+    scrape_url = 'https://www.amazon.com/product-reviews/' + productId + '/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
 
     proxies = get_proxies()
     proxy_pool = cycle(proxies)

@@ -211,8 +211,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     distributionScoreDf.add_suffix('_Count').reset_index()
 
     # making trend data for plotting
-    plotDfTrendline = df.groupby(['date'], as_index=False).mean().round(
-        3)  # groups by date and takes the mean of the scores
+    # groups by date and takes the mean of the scores
+    plotDfTrendline = df.groupby(['date'], as_index=False).mean().round(3)
     df = df.sort_values('date')
 
     # making df for plotting variance and sentiment
