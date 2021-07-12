@@ -45,23 +45,18 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
             review_data.append(list(raw_row.values()))
 
     for row in review_data:
-        print(row)
         whole_reviews.append(str(row[1]))  # adding the whole review to the list
         whole_review_date.append(str(row[2]))  # adding that review date to the list
-        print(len(whole_reviews))
     if len(whole_reviews) <=50:
         whole_reviews_top2 = whole_reviews * 100
     elif len(whole_reviews) <= 200:
         whole_reviews_top2 = whole_reviews * 10
     else:
         whole_reviews_top2 = whole_reviews
-    print(len(whole_reviews_top2))
-    print(len(whole_reviews))
     unsupervised_model = Top2Vec(whole_reviews_top2, min_count=10, embedding_model='universal-sentence-encoder')
     # runs model and gets topics from sentence list
     topic_words, word_scores, topic_nums = unsupervised_model.get_topics(unsupervised_model.get_num_topics())
 
-    print(topic_words[0])
     for word_index in range(0, len(topic_words[0])):  # gets rid of plural words
         topic_words[0, word_index] = wnl.lemmatize(topic_words[0, word_index])
     unique_topics = list(dict.fromkeys(topic_words[0]))
@@ -85,7 +80,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     for label in candidate_labels:
         sen_topic_dict[label] = [], [], [], [], [], [], [], [], [], [], [], []
 
-    print(sen_topic_dict)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
@@ -100,13 +94,9 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 # gets the scores from the dictionary produced by running the model again
                 topic_scores = classified_dict.get('scores')
                 topic_categories = classified_dict.get('labels')
-                print('classified dict' + str(classified_dict))
                 # finds the max score of the model output scores
                 max_score_index = topic_scores.index(max(topic_scores))
-                print('max_index' + str(max_score_index))
-                print('index' + str(max_score_index))
                 print(topic_categories[max_score_index])
-                print('topic scores ' + str(topic_scores))
                 # find emotion of the text
                 result = te.get_emotion(sen)
                 max_key = str(max(result, key=result.get))
@@ -129,7 +119,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
         sen_list = dict_list_list[0]  # getting sentences from 2D array
         for sen in sen_list:
             sent_score = analyzer.polarity_scores(sen)['compound']  # gets the compounded sentiment score
-            print('sent_score: ' + str(sent_score))
             sen_topic_dict[key][1].append(sent_score)  # adds sentient score to dictionary array
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Plotting @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
@@ -193,11 +182,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     df['star_scale_sentiments'] = star_scale_sentiments
 
     # making review rating distributions data for plotting
-    print("star mean: " + str(normalized_star_mean))
-    print("star stdv: " + str(normalized_star_stdv))
-    print("sentiment mean: " + str(normalized_mean_sentiment))
-    print("sentiment stdv: " + str(normalized_stdv_sentiment))
-
     # making sentiment per category data for plotting
     plotDfCategory = df.groupby(['category'], as_index=False).mean().round(3)
     plotDfCategory.score / len(df.score)
@@ -230,8 +214,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
 
         plot_df_variant = pd.concat(plot_df_variant).reset_index()  # turning list into dataframe
         plot_df_variant_star = pd.concat(plot_df_variant_star).reset_index()  # turning list into dataframe
-    print(plot_df_variant)
-    print(plot_df_variant_star)
 
     # finding net promoter score
     promoters = []
@@ -245,9 +227,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
             promoters.append(promoter_score)
         else:
             neutrals.append(promoter_score)
-    print(promoters)
-    print(detractors)
-    print(neutrals)
+
     net_promoter_score = (len(promoters) / len(df.score)) - (len(detractors) / len(df.score))
 
     print('net promoter score', net_promoter_score)
@@ -331,13 +311,11 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     parsed = json.loads(result)
     json.dumps(parsed, indent=4)
     json_star_distribution = parsed
-    print(json_star_distribution)
 
     result = distributionScoreDf[['star_scale_sentiments', 'sentence']].to_json(orient="records")
     parsed = json.loads(result)
     json.dumps(parsed, indent=4)
     json_score_distribution = parsed
-    print(json_score_distribution)
 
     one_year_ago_df['x'] = one_year_ago_df['date'].apply(
         lambda x: x.strftime('%Y-%m-%d'))  # turing date time object to strings to appear correct in json
@@ -382,7 +360,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     mylist = gpt3_data
     json_to_upload = json.dumps([{'text': test} for test in mylist], default=str, indent=1)
     json_to_upload = json.loads(json_to_upload)
-    print(type(json_to_upload))
     # json_to_upload = json.dumps([{'text': mylist}], default=str, indent=1)
     # json_to_upload = json.loads(json_to_upload)
 

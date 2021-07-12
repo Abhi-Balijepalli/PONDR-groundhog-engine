@@ -11,7 +11,6 @@ def send_data(id):
     # a dictionary
     package = json.load(f)
 
-    print(type(package))
     # defining the api-endpoint
     API_ENDPOINT = "https://groundhog.letspondr.com/analyze"
 
@@ -24,4 +23,4 @@ def send_data(id):
     # extracting response text
     pastebin_url = r.text
 
-    print("The pastebin URL is:%s" % pastebin_url)
+    print("The pastebin URL is:%s " % pastebin_url)
