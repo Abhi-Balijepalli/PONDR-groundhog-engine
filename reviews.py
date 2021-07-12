@@ -85,11 +85,9 @@ def get_proxies():  # getting proxies by scrapping the site for free
     url3 = 'https://free-proxy-list.net/'
     response = requests.get(url3)
     parser = fromstring(response.text)
-    print(parser.xpath('//tbody/tr'))
     proxies = set()
 
     for i in parser.xpath('//tbody/tr')[:200]:
-        print(i.xpath('.//td[7][contains(text(),"yes")]'))
         if i.xpath('.//td[7][contains(text(),"yes")]'):
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
             proxies.add(proxy)
@@ -209,7 +207,7 @@ def get_product_page(front_url):
             driver = webdriver.Chrome(chrome_options=chrome_options,
                                       executable_path="/usr/lib/chromium-browser/chromedriver")
 
-            print('This is gonna be LEGEN... wait for it:')
+            print('starting download...')
             url = front_url
             driver.get(url)
             WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
@@ -285,7 +283,6 @@ def get_page_num(url2):
                                                                   "https": working_ip[current_ip]}, timeout=45)
             if e.extract(r.text)['reviews'] is None:
                 print('Amazon blocked so new ip')
-                print(e.extract(r.text))
                 current_ip = random.randint(0, len(working_ip) - 1)
                 r = ''
             else:
@@ -305,7 +302,6 @@ def get_page_num(url2):
                 stop_count = 0
             continue
 
-    print(str(r.status_code))
     data = e.extract(r.text)
     for r in data['reviews']:
         r["product"] = data["product_title"]
@@ -331,7 +327,6 @@ def get_page_num(url2):
         else:
             r['title'] = r['title'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
         r['author'] = r['author'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
-        print(r)
         csv_outfile.append(r)
         txt_outfile.append(r['content'] + "\n")
     global total_pages_scrapped
@@ -342,7 +337,6 @@ def get_page_num(url2):
     search_string = search_string.group(1)
     search_string = search_string.replace('|', '')
     search_string = search_string.replace(',', '')
-    print(search_string)
     page_int = int(float(search_string))
     page_int = int(page_int / 10) + 1
     global all_pages
