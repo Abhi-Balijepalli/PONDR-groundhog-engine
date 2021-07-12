@@ -206,7 +206,8 @@ def get_product_page(front_url):
         try:
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--proxy-server=%s' % PROXY)
-            driver = webdriver.Chrome(chrome_options=chrome_options, executable_path="/usr/lib/chromium-browser/chromedriver")
+            driver = webdriver.Chrome(chrome_options=chrome_options,
+                                      executable_path="/usr/lib/chromium-browser/chromedriver")
 
             print('This is gonna be LEGEN... wait for it:')
             url = front_url
@@ -231,7 +232,7 @@ def get_product_page(front_url):
                 feature_bullets = driver.find_element_by_xpath('//*[@id="feature-bullets"]')
                 product_info['feature_bullets'] = feature_bullets.text
             except:
-                product_info['description'] = 0
+                product_info['feature_bullets'] = 0
             try:
                 images = [my_elem.get_attribute("src") for my_elem in WebDriverWait(driver, 20).until(
                     EC.visibility_of_all_elements_located(
@@ -364,7 +365,6 @@ def run_scrapping(url_to_scrape):
     elif 'product/' in scrape_url:
         end_of_link = scrape_url.split('product/')[1]
         productId = end_of_link[0:10]
-
 
     scrape_url = 'https://www.amazon.com/product-reviews/' + productId + '/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
 
