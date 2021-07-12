@@ -206,7 +206,7 @@ def get_product_page(front_url):
         try:
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--proxy-server=%s' % PROXY)
-            driver = webdriver.Chrome(chrome_options=chrome_options)
+            driver = webdriver.Chrome(chrome_options=chrome_options, executable_path="/usr/lib/chromium-browser/chromedriver")
 
             print('This is gonna be LEGEN... wait for it:')
             url = front_url
