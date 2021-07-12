@@ -38,9 +38,8 @@ def main(text):
     threads = []
     products = get_products()
     print(products)
-    for product in products:
-        automate(product['url'], product['company_id'], product['product_id'], product['id'])
-        break
+    product = products[0]
+    automate(product['url'], product['company_id'], product['product_id'], product['id'])
 
 
 def automate(url, company_id, product_id, id):
