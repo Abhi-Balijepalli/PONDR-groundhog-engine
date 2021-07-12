@@ -442,7 +442,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 "worst_review": whole_reviews[min_index],
                 "neutral": whole_reviews[neutral_index]
             },
-            "word_cloud": "null"
+            "word_cloud": topic_nums
         }
     }
 
