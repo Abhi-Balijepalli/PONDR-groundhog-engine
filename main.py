@@ -16,7 +16,7 @@ def scheduler_run_forever():
         scheduler = BlockingScheduler()
 
         # Run every 15mins all day (Works!)
-        scheduler.add_job(main, 'interval', minutes=15, args=['enterprise-automation'])
+        scheduler.add_job(main, 'interval', minutes=5, args=['enterprise-automation'])
 
         # Run every 15mins from 6:15am - 11:15pm a day job Method (Testing right now)
         # scheduler.add_job(main, 'cron', hour='6-23', minute='*/15', args=['enterprise-automation'])
