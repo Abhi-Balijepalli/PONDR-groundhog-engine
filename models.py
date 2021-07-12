@@ -22,7 +22,8 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 today = date.today()
 
 
-def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, product_images, short_description, long_description):
+def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, product_images, short_description,
+               long_description):
     nltk.download('wordnet')
     nltk.download('punkt')
     wnl = nltk.WordNetLemmatizer()
@@ -44,12 +45,14 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
         if raw_row != empty_list:  # makes sure there isn't and empty row
             review_data.append(list(raw_row.values()))
 
+    whole_review_length = len(whole_reviews)
+
     for row in review_data:
         whole_reviews.append(str(row[1]))  # adding the whole review to the list
         whole_review_date.append(str(row[2]))  # adding that review date to the list
-    if len(whole_reviews) <=50:
+    if whole_review_length <= 50:
         whole_reviews_top2 = whole_reviews * 100
-    elif len(whole_reviews) <= 200:
+    elif whole_review_length <= 200:
         whole_reviews_top2 = whole_reviews * 10
     else:
         whole_reviews_top2 = whole_reviews
@@ -80,9 +83,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     for label in candidate_labels:
         sen_topic_dict[label] = [], [], [], [], [], [], [], [], [], [], [], []
 
-
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-
+    num_of_cats_done = 0
     # running model 1, topic analysis
     for row in review_data:  # going through reviews data
         if row != empty_list and row[1] != "":  # makes sure there isn't and empty row
@@ -112,7 +114,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
                 sen_topic_dict[topic_categories[max_score_index]][10].append(max_key)  # emotion
                 sen_topic_dict[topic_categories[max_score_index]][11].append(str(result[max_key]))  # emotion percentage
-
+        num_of_cats_done = num_of_cats_done + 1
+        print('category percentage ' + str((num_of_cats_done/whole_review_length)*100) + '%')
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
     for key, dict_list_list in sen_topic_dict.items():  # loops through items in the main sentence dictionary
@@ -331,7 +334,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
 
     for label in candidate_labels:
         full_cat_json[label] = []
-    twoD_cat_list = list(zip(df.category, datetime_dates, df.score, df.sentence, df.emotion, df.emotion_percentage))  # zipping
+    twoD_cat_list = list(
+        zip(df.category, datetime_dates, df.score, df.sentence, df.emotion, df.emotion_percentage))  # zipping
     twoD_cat_list = list(sorted(twoD_cat_list, key=lambda x: datetime.datetime.strptime(x[1], '%Y-%m-%d')))
     unzipped_object = zip(*twoD_cat_list)
     unzipped_list = list(unzipped_object)
@@ -344,7 +348,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
 
     for i in range(0, len(whole_reviews) - 1):
         full_cat_json[cat_list[i]].append(
-            {"date": date_list[i], "score": score_list[i], "review": sentence_list[i], "emotion": emotion_list[i], "emotion_percentage": emotion_percentage_list[i]})
+            {"date": date_list[i], "score": score_list[i], "review": sentence_list[i], "emotion": emotion_list[i],
+             "emotion_percentage": emotion_percentage_list[i]})
     full_cat_json = json.dumps(full_cat_json, indent=1)
     full_cat_json = json.loads(full_cat_json)
     print("full cat df " + str(type(full_cat_json)))

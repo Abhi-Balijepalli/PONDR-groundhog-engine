@@ -91,7 +91,6 @@ def get_proxies():  # getting proxies by scrapping the site for free
         if i.xpath('.//td[7][contains(text(),"yes")]'):
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
             proxies.add(proxy)
-            print(proxies)
     return proxies
 
 
