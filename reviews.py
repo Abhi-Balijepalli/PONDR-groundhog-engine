@@ -125,6 +125,7 @@ def find_ip(lower_range, upper_range):
 
 
 def scrape(url2, ip_index, thread_number):
+    print("This is the page num!!!!!!!!!!!!" + str(page_percentage))
     if page_percentage >= 90:  # change for more or less page percentage
         return None
     else:
@@ -434,6 +435,8 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
 
         data = scrape(scrape_url + str(i), old_randints[thread_number - 1], thread_number)
         # appends the page number to the end of the url
+        print('total page scrapped ' + str(total_pages_scrapped))
+        print('collect_data page percentage ' + str(page_percentage))
         if data is None:
             print('exiting!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
             sys.exit()  # exiting if the percentage is 90 or more
