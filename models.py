@@ -84,7 +84,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
         sen_topic_dict[label] = [], [], [], [], [], [], [], [], [], [], [], []
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-    num_of_cats_done = 0
+    #num_of_cats_done = 0
     # running model 1, topic analysis
     for row in review_data:  # going through reviews data
         if row != empty_list and row[1] != "":  # makes sure there isn't and empty row
@@ -114,8 +114,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
                 sen_topic_dict[topic_categories[max_score_index]][10].append(max_key)  # emotion
                 sen_topic_dict[topic_categories[max_score_index]][11].append(str(result[max_key]))  # emotion percentage
-        num_of_cats_done = num_of_cats_done + 1
-        print('category percentage ' + str((num_of_cats_done/whole_review_length)*100) + '%')
+        #num_of_cats_done = num_of_cats_done + 1
+        #print('category percentage ' + str((num_of_cats_done/whole_review_length)*100) + '%')
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
     for key, dict_list_list in sen_topic_dict.items():  # loops through items in the main sentence dictionary
