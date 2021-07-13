@@ -14,6 +14,19 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+total_pages_scrapped = 0
+old_randints = [None]  # empty list for now, see end of run_scrapping() for more
+csv_outfile = []
+txt_outfile = []
+working_ip = []
+proxy_pool = []
+scrape_url = ""
+original_url = ""
+page_percentage = 0
+first_page_data = ""
+all_pages = 0
+got_product_page = False
+product_page_dict = []
 # This data was created by using the curl method explained above
 headers_list = [
     # Firefox 77 Mac
