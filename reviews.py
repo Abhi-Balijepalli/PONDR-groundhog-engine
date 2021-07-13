@@ -23,7 +23,6 @@ proxy_pool = []
 scrape_url = ""
 original_url = ""
 page_percentage = 0
-first_page_data = ""
 all_pages = 0
 got_product_page = False
 product_page_dict = []
@@ -349,25 +348,10 @@ def run_scrapping(url_to_scrape):
     global old_randints  # including old_randints as global
     global proxy_pool
     global all_pages
-    global total_pages_scrapped
-    global original_url
     global page_percentage
-    global first_page_data
-    global got_product_page
+    global total_pages_scrapped
     total_pages_scrapped = 0
-    old_randints = [None]  # empty list for now, see end of run_scrapping() for more
-    csv_outfile = []
-    txt_outfile = []
-    working_ip = []
-    proxy_pool = []
-    scrape_url = ""
-    original_url = ""
     page_percentage = 0
-    first_page_data = ""
-    all_pages = 0
-    got_product_page = False
-    product_page_dict = []
-
     scrape_url = url_to_scrape
     scrape_url = scrape_url.rstrip()
     print(scrape_url)
@@ -455,7 +439,7 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
         data = scrape(scrape_url + str(i), old_randints[thread_number - 1], thread_number)
         # appends the page number to the end of the url
         print('total page scrapped ' + str(total_pages_scrapped))
-        print('collect_data page percentage ' + str(page_percentage))
+        print('collect_data page percentage ')
         if data is None:
             print('exiting!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
             sys.exit()  # exiting if the percentage is 90 or more
