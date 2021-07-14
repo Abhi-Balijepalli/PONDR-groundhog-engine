@@ -322,8 +322,8 @@ def get_page_num(url2):
             r['images'] = "\n".join(r['images'])
         r['date'] = dateparser.parse(date_posted).strftime('%d %b %Y')
         r['content'] = r['content'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
-        if 'Your browser does not support HTML5 video.' in r['content']:
-            r['content'] = r['content'].replace('your browser does not support html5 video', '')
+        if 'Your browser does not support HTML5 video' in r['content']:
+            r['content'] = r['content'].replace('Your browser does not support HTML5 video', '')
         if r['title'] is None:
             r['title'] = ''
         else:
@@ -498,8 +498,8 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
                         r['images'] = "\n".join(r['images'])
                     r['date'] = dateparser.parse(date_posted).strftime('%d %b %Y')
                     r['content'] = r['content'].encode('ascii', 'ignore').decode('ascii')  # gets rid of emojis!
-                    if 'Your browser does not support HTML5 video.' in r['content']:
-                        r['content'] = r['content'].replace('your browser does not support html5 video', '')
+                    if 'Your browser does not support HTML5 video' in r['content']:
+                        r['content'] = r['content'].replace('Your browser does not support HTML5 video', '')
                     if r['title'] is None:
                         r['title'] = ''
                     else:
