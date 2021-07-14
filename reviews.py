@@ -231,10 +231,13 @@ def get_product_page(front_url):
             except:
                 product_info['feature_bullets'] = 0
             try:
+                high_res_image = []
                 images = [my_elem.get_attribute("src") for my_elem in WebDriverWait(driver, 20).until(
                     EC.visibility_of_all_elements_located(
                         (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
-                product_info['images'] = images
+                for image in images:
+                    high_res_image.append(image[0:47] + '._SL1500_.jpg')
+                product_info['images'] = high_res_image
             except:
                 product_info['images'] = 0
             try:
