@@ -18,6 +18,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from api import send_data
 import text2emotion as te
 
+openai.api_key = ("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")
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 today = date.today()
 
@@ -122,6 +123,29 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
         sen_list = dict_list_list[0]  # getting sentences from 2D array
         for sen in sen_list:
             sent_score = analyzer.polarity_scores(sen)['compound']  # gets the compounded sentiment score
+            response = openai.Classification.create(
+                search_model="ada",
+                model="curie",
+                examples=[
+                    [
+                        "I've used it for several hours with my iPad Pro and a TV and there have been no dropouts, sync issues, artifacts, or other problems.",
+                        "Positive"],
+                    ["I am sad.", "Negative"],
+                    ["No issues like screen flickering that I've experienced with others.", "Positive"]
+                ],
+                query=sen,
+                labels=["Positive", "Negative", "Neutral"],
+            )
+
+            label = response['label']
+            print(response['label'])
+            if label == 'Positive':
+                sent_score = abs(sent_score)
+            elif label == 'Negative':
+                sent_score = (abs(sent_score)) * -1
+            else:
+                sent_score = round(sent_score / 2, 4)
+            print(sent_score)
             sen_topic_dict[key][1].append(sent_score)  # adds sentient score to dictionary array
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Plotting @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
@@ -359,8 +383,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     neutral_index = whole_review_sentiment.index(min(whole_review_sentiment, key=abs))  # same but for neutral review
 
     # Open AI file upload
-
-    openai.api_key = ("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")
 
     mylist = gpt3_data
     json_to_upload = json.dumps([{'text': text} for text in mylist], default=str, indent=1)
