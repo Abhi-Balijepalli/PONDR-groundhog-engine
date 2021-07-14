@@ -127,9 +127,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 search_model="ada",
                 model="curie",
                 examples=[
-                    [
-                        "I've used it for several hours with my iPad Pro and a TV and there have been no dropouts, sync issues, artifacts, or other problems.",
-                        "Positive"],
+                    ["I've used it for several hours with my iPad Pro and a TV and there have been no dropouts, sync issues, artifacts, or other problems.", "Positive"],
                     ["I am sad.", "Negative"],
                     ["No issues like screen flickering that I've experienced with others.", "Positive"]
                 ],
