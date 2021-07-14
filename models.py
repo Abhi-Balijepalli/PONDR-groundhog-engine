@@ -363,7 +363,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     openai.api_key = ("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")
 
     mylist = gpt3_data
-    json_to_upload = json.dumps([{'text': test} for test in mylist], default=str, indent=1)
+    json_to_upload = json.dumps([{'text': text} for text in mylist], default=str, indent=1)
     json_to_upload = json.loads(json_to_upload)
     # json_to_upload = json.dumps([{'text': mylist}], default=str, indent=1)
     # json_to_upload = json.loads(json_to_upload)
