@@ -236,7 +236,7 @@ def get_product_page(front_url):
                     EC.visibility_of_all_elements_located(
                         (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
                 for image in images:
-                    high_res_image.append(image[0:47] + '._SL1500_.jpg')
+                    high_res_image.append(image[:-14] + '._SL1500_.jpg')
                 product_info['images'] = high_res_image
             except:
                 product_info['images'] = 0
