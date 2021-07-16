@@ -436,7 +436,9 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 "images": product_images,
                 "price": str(price),
                 "short_description": short_description,
-                "long_description": long_description
+                "long_description": long_description,
+                "word_scores": word_scores.tolist(),
+                "topic_list": topic_words.tolist()
             },
             "gpt3_form_id": upload['id'],
 
@@ -445,8 +447,6 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 "worst_review": whole_reviews[min_index],
                 "neutral": whole_reviews[neutral_index]
             },
-            "word_scores": word_scores.tolist(),
-            "topic_list": topic_words.tolist()
         }
     }
 
