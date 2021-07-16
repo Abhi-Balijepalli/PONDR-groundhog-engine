@@ -236,7 +236,8 @@ def get_product_page(front_url):
                     EC.visibility_of_all_elements_located(
                         (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
                 for image in images:
-                    high_res_image.append(image[:-14] + '._SL1500_.jpg')
+                    search_string = re.search('/I/(.+?)._', image)
+                    high_res_image.append('https://m.media-amazon.com/images/I/' + search_string.group(1) + '._SL1500_.jpg')
                 product_info['images'] = high_res_image
             except:
                 product_info['images'] = 0
@@ -343,6 +344,9 @@ def get_page_num(url2):
     search_string = search_string.replace(',', '')
     page_int = int(float(search_string))
     page_int = int(page_int / 10)  # add plus one
+    if page_int % 10 != 0:
+        page_int = page_int + 1
+
     global all_pages
     all_pages = page_int
 

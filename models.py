@@ -16,7 +16,7 @@ from top2vec import Top2Vec
 from transformers import pipeline
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from api import send_data
-import text2emotion as te
+# import text2emotion as te
 
 openai.api_key = ("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")
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
@@ -101,8 +101,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 max_score_index = topic_scores.index(max(topic_scores))
                 print(topic_categories[max_score_index])
                 # find emotion of the text
-                result = te.get_emotion(sen)
-                max_key = str(max(result, key=result.get))
+                # result = te.get_emotion(sen)
+                # max_key = str(max(result, key=result.get))
 
                 sen_topic_dict[topic_categories[max_score_index]][0].append(sen)  # adds values from csv to dictionary
                 sen_topic_dict[topic_categories[max_score_index]][2].append(row[2])  # date
@@ -113,8 +113,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 sen_topic_dict[topic_categories[max_score_index]][7].append(row[7])  # rating
                 sen_topic_dict[topic_categories[max_score_index]][8].append(row[8])  # product
                 sen_topic_dict[topic_categories[max_score_index]][9].append(row[9])  # url
-                sen_topic_dict[topic_categories[max_score_index]][10].append(max_key)  # emotion
-                sen_topic_dict[topic_categories[max_score_index]][11].append(str(result[max_key]))  # emotion percentage
+                # sen_topic_dict[topic_categories[max_score_index]][10].append(max_key)  # emotion
+                # sen_topic_dict[topic_categories[max_score_index]][11].append(str(result[max_key]))  # emotion percentage
         #num_of_cats_done = num_of_cats_done + 1
         #print('category percentage ' + str((num_of_cats_done/whole_review_length)*100) + '%')
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 2 Sentiment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
@@ -145,8 +145,8 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 "product": sen_topic_dict[key][8],
                 "url": sen_topic_dict[key][9],
                 "category": key,
-                "emotion": sen_topic_dict[key][10],
-                "emotion_percentage": sen_topic_dict[key][11]
+                # "emotion": sen_topic_dict[key][10],
+                # "emotion_percentage": sen_topic_dict[key][11]
             }))
 
     # Combine DFs
@@ -336,12 +336,12 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
     for label in candidate_labels:
         full_cat_json[label] = []
     twoD_cat_list = list(
-        zip(df.category, datetime_dates, df.score, df.sentence, df.emotion, df.emotion_percentage))  # zipping
+        zip(df.category, datetime_dates, df.score, df.sentence))  # zipping
     twoD_cat_list = list(sorted(twoD_cat_list, key=lambda x: datetime.datetime.strptime(x[1], '%Y-%m-%d')))
     unzipped_object = zip(*twoD_cat_list)
     unzipped_list = list(unzipped_object)
-    emotion_percentage_list = unzipped_list[5]
-    emotion_list = unzipped_list[4]
+    # emotion_percentage_list = unzipped_list[5]
+    # emotion_list = unzipped_list[4]
     sentence_list = unzipped_list[3]
     score_list = unzipped_list[2]
     date_list = unzipped_list[1]
@@ -349,8 +349,7 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
 
     for i in range(0, len(whole_reviews) - 1):
         full_cat_json[cat_list[i]].append(
-            {"date": date_list[i], "score": score_list[i], "review": sentence_list[i], "emotion": emotion_list[i],
-             "emotion_percentage": emotion_percentage_list[i]})
+            {"date": date_list[i], "score": score_list[i], "review": sentence_list[i]})
     full_cat_json = json.dumps(full_cat_json, indent=1)
     full_cat_json = json.loads(full_cat_json)
     print("full cat df " + str(type(full_cat_json)))
