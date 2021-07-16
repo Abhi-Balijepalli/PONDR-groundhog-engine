@@ -144,7 +144,6 @@ def get_deals_of_the_day(front_url):
     final_JSON = final_JSON[:-1]
     final_JSON = final_JSON + '}'
     final_JSON = final_JSON[11:]
-    print('@@@@@@@@@@@@@@@ final json @@@@@@@@@@@@@@@')
     final_JSON_object = json.loads(final_JSON)
 
     test_json = final_JSON_object['prefetchedData']
@@ -181,8 +180,10 @@ def main():
     for t in ip_threads:
         t.join()  # joins all started threads to find working ups
 
-    get_deals_of_the_day('https://www.amazon.com/events/schooldeals')
+    get_deals_of_the_day('https://www.amazon.com/gp/goldbox/')
     #'https://www.amazon.com/events/collegedeals?ref=deals_deals_deals-grid_slot-15_39f3_dt_dcell_img_2_024739bb' for college deals of the day
+    # https://www.amazon.com/gp/goldbox/
+    # https://www.amazon.com/events/schooldeals
 
 if __name__ == "__main__":
     main()

@@ -436,9 +436,9 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
                 "images": product_images,
                 "price": str(price),
                 "short_description": short_description,
-                "long_description": long_description,
-                "word_scores": json.dumps(word_scores.tolist()),
-                "topic_list": json.dumps(topic_words.tolist())
+                "long_description": long_description
+                #"word_scores": json.dumps(word_scores.tolist()),
+                #"topic_list": json.dumps(topic_words.tolist())
             },
             "gpt3_form_id": upload['id'],
 
