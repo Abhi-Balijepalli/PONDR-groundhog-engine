@@ -394,7 +394,7 @@ def run_deals_scrapping(asin_to_scrape):
     #    product_index = product_index + 1
     # product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
     # product_page_thread.start()
-    get_product_page("https://www.amazon.com/dp/" + asin + "?ref=deals_collegedeals_deals-grid_slot-6_6773_dt_dcell_tlt_1_eca07520")
+    get_product_page("https://www.amazon.com/dp/" + asin)
     time.sleep(1)
     get_page_num(scrape_url + '1')
 
