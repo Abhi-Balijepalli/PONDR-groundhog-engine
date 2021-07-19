@@ -55,6 +55,7 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
     for row in review_data:  # going through reviews data
         if row != empty_list and row[1] != "":  # makes sure there isn't and empty row
             sequence_to_classify = nltk.tokenize.sent_tokenize(row[1])
+            whole_reviews.append(row[1])
             whole_review_sentiment.append(analyzer.polarity_scores(row[1])['compound'])
             for sen in sequence_to_classify:  # going through individual review sentences
                 topic_categories = 'None'
@@ -221,8 +222,6 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
     json.dumps(parsed, indent=4)
     json_score_distribution = parsed
 
-    max_index = whole_review_sentiment.index(max(whole_review_sentiment))  # calculated max index for max review
-    min_index = whole_review_sentiment.index(min(whole_review_sentiment))  # does the same as above but for min review
     # Open AI file upload
 
     mylist = gpt3_data
@@ -241,6 +240,8 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
     )
 
     print(upload['id'])
+    max_index = whole_review_sentiment.index(max(whole_review_sentiment))  # calculated max index for max review
+    min_index = whole_review_sentiment.index(min(whole_review_sentiment))  # does the same as above but for min review
 
     package = {
         "data": {
