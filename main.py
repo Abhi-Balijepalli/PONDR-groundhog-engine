@@ -1,14 +1,10 @@
 import os
-
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
-from threading import Thread
 import time
-import sys
 from apscheduler.schedulers.blocking import BlockingScheduler
 from reviews import run_scrapping
 from models import run_models
 from get_api import get_products
-from api import send_data
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 
 def scheduler_run_forever():
