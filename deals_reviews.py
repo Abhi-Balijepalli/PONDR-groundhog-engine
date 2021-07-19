@@ -339,6 +339,8 @@ def get_page_num(url2):
     search_string = re.search('ratings (.+?)global reviews', return_string)
     if search_string is None:
         search_string = re.search('rating (.+?)global review', return_string)
+    elif search_string is None:
+        search_string = re.search('ratings (.+?)global review', return_string)
     search_string = search_string.group(1)
     search_string = search_string.replace('|', '')
     search_string = search_string.replace(',', '')
