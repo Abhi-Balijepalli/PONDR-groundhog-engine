@@ -10,7 +10,6 @@ import pandas as pd
 import torch
 from jsonlines import jsonlines
 from numba import cuda
-from top2vec import Top2Vec
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from deals_post import send_deals_data
 
@@ -39,31 +38,6 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
         if raw_row != empty_list:  # makes sure there isn't and empty row
             review_data.append(list(raw_row.values()))
 
-    whole_review_length = len(whole_reviews)
-
-    for row in review_data:
-        whole_reviews.append(str(row[1]))  # adding the whole review to the list
-        whole_review_date.append(str(row[2]))  # adding that review date to the list
-    if whole_review_length <= 50:
-        whole_reviews_top2 = whole_reviews * 100
-    elif whole_review_length <= 200:
-        whole_reviews_top2 = whole_reviews * 10
-    else:
-        whole_reviews_top2 = whole_reviews
-    unsupervised_model = Top2Vec(whole_reviews_top2, min_count=10, embedding_model='universal-sentence-encoder')
-    # runs model and gets topics from sentence list
-    topic_words, word_scores, topic_nums = unsupervised_model.get_topics(unsupervised_model.get_num_topics())
-
-    for word_index in range(0, len(topic_words[0])):  # gets rid of plural words
-        topic_words[0, word_index] = wnl.lemmatize(topic_words[0, word_index])
-    unique_topics = list(dict.fromkeys(topic_words[0]))
-    print((', '.join(unique_topics[0:(len(unique_topics) - 1)])) + ', and ' +
-          (unique_topics[(len(unique_topics) - 1)]))
-    # gets the topics that were found in the line above
-    candidate_labels = candidate_labels + (unique_topics[0:5])
-    # change number here to include more unsupervised topics
-    print(candidate_labels)
-
     device = cuda.get_current_device()  # getting current device (GPU)
     device.reset()  # resetting to be able to reallocate memory
 
@@ -73,6 +47,7 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
 
     # making topic dictionary for later use in zero-shot
     sen_topic_dict = {}
+    sen_topic_dict['None'] = [], [], [], [], [], [], [], [], [], [], [], []
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Model 1 Category @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     # num_of_cats_done = 0
