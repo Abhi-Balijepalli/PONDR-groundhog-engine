@@ -18,7 +18,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 today = date.today()
 
 
-def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_description, long_description, category):
+def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_description, long_description, category, asin):
     nltk.download('wordnet')
     nltk.download('punkt')
     wnl = nltk.WordNetLemmatizer()
@@ -281,6 +281,7 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
                 "sentiment_per_variant": json_variant_rating
             },
             "summary": {
+                "asin": asin,
                 "num_of_reviews": int(len(whole_reviews)),
                 "date": str(today),
                 "mean_sentiment": normalized_mean_sentiment,

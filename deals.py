@@ -8,5 +8,5 @@ if __name__ == "__main__":
     id = 0
     for asin in asin_list:
         review_data, gpt3_data, price, product_images, short_description, long_description, category = run_deals_scrapping(asin)
-        run_deals(review_data, gpt3_data, id, price, product_images, short_description, long_description, category)
+        run_deals(review_data, gpt3_data, id, price, product_images, short_description, long_description, category, asin)
         id = id + 1
