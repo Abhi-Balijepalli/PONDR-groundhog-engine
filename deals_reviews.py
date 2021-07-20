@@ -396,9 +396,11 @@ def run_deals_scrapping(asin_to_scrape):
     #    product_index = product_index + 1
     # product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
     # product_page_thread.start()
-    get_product_page("https://www.amazon.com/dp/" + asin)
+    product_page_thread = Thread(get_product_page("https://www.amazon.com/dp/" + asin))
+    product_page_thread.start()
     time.sleep(1)
     get_page_num(scrape_url + '1')
+    product_page_thread.join()
 
     if all_pages > 100:
         all_pages = 100
