@@ -261,6 +261,7 @@ def get_page_num(url2):
     # Create an Extractor by reading from the YAML file
     e = Extractor.from_yaml_file('selectors.yml')
     global headers
+    global all_pages
     # Create ordered dict from Headers above
     ordered_headers_list = []
 
@@ -349,7 +350,6 @@ def get_page_num(url2):
     if page_int % 10 != 0:
         page_int = page_int + 1
 
-    global all_pages
     all_pages = page_int
 
 
