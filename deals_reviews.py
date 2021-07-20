@@ -237,7 +237,8 @@ def get_product_page(front_url):
                         (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
                 for image in images:
                     search_string = re.search('/I/(.+?)._', image)
-                    high_res_image.append('https://m.media-amazon.com/images/I/' + search_string.group(1) + '._SL1500_.jpg')
+                    high_res_image.append(
+                        'https://m.media-amazon.com/images/I/' + search_string.group(1) + '._SL1500_.jpg')
                 product_info['images'] = high_res_image
             except:
                 product_info['images'] = 0
@@ -285,7 +286,7 @@ def get_page_num(url2):
         try:
             r = site_response.get(url2, headers=headers, proxies={"http": working_ip[current_ip],
                                                                   "https": working_ip[current_ip]}, timeout=45)
-            if e.extract(r.text)['reviews'] is None:
+            if e.extract(r.text)['review_number'] is None:
                 print('Amazon blocked so new ip')
                 current_ip = random.randint(0, len(working_ip) - 1)
                 r = ''
@@ -402,6 +403,9 @@ def run_deals_scrapping(asin_to_scrape):
     get_page_num(scrape_url + '1')
     product_page_thread.join()
 
+    if all_pages == 0:  # exits method if no reviews
+        return
+
     if all_pages > 100:
         all_pages = 100
     print(all_pages)
@@ -433,7 +437,8 @@ def run_deals_scrapping(asin_to_scrape):
     #    t.join()
 
     return csv_outfile, txt_outfile, product_page_dict[0]['price'], product_page_dict[0]['images'], \
-           product_page_dict[0]['feature_bullets'], product_page_dict[0]['long_description'], product_page_dict[0]['category']
+           product_page_dict[0]['feature_bullets'], product_page_dict[0]['long_description'], product_page_dict[0][
+               'category']
 
 
 def collect_data(lower_page, higher_page, all_pages, thread_number):
