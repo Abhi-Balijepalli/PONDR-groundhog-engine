@@ -221,7 +221,7 @@ def get_product_page(front_url):
             except:
                 product_info['price'] = 0
             try:
-                category = driver.find_element_by_xpath("(//span[@class='a-list-item']/a)[last()]")
+                category = driver.find_element_by_xpath("/html/body/div[1]/div[3]/div[7]/div/div/ul/li[1]/span/a")
                 product_info['category'] = category.text.strip()
             except:
                 product_info['category'] = 0
