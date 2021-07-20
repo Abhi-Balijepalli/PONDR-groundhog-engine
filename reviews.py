@@ -342,9 +342,9 @@ def get_page_num(url2):
     search_string = search_string.group(1)
     search_string = search_string.replace('|', '')
     search_string = search_string.replace(',', '')
-    page_int = int(float(search_string))
-    page_int = int(page_int / 10)  # add plus one
-    if page_int % 10 != 0:
+    review_int = int(float(search_string))
+    page_int = int(review_int / 10)  # add plus one
+    if review_int % 10 != 0:
         page_int = page_int + 1
 
     global all_pages
