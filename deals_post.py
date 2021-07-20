@@ -15,7 +15,7 @@ def send_deals_data(id):
 
     print(package)
     # sending post request and saving response as response object
-    r = requests.post('https://dev.letspondr.com//consumerprodouct/create', json=package)
+    r = requests.post('groundhog.letspondr.com/consumer_product', json=package)
 
     # extracting response text
     pastebin_url = r.text

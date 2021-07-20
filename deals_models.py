@@ -290,7 +290,8 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
                 "price": str(price),
                 "short_description": short_description,
                 "long_description": long_description,
-                "category": str(category)
+                "category": str(category),
+                "type": "college"
             },
             "gpt3_form_id": upload['id'],
 
