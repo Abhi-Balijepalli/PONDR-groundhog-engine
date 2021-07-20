@@ -7,7 +7,7 @@ import json
 if __name__ == "__main__":
 
     asin_list = get_deals_of_the_day('https://www.amazon.com/events/collegedeals?ref=deals_deals_deals-grid_slot-15_39f3_dt_dcell_img_2_024739bb')
-    r = requests.get('groundhog.letspondr.com/asins')
+    r = requests.get('https://groundhog.letspondr.com/asins')
     old_asin_list = json.loads(r.text)
     final_asin_list = list(set(asin_list + old_asin_list['IDs']))
     print(final_asin_list)
