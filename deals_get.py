@@ -131,7 +131,7 @@ def get_deals_of_the_day(front_url):
     r = ''
     while r == '':
         try:
-            r = site_response.get(front_url, headers=headers, proxies={"http": working_ip[current_ip],
+            r = site_response.get(front_url, headers=headers, timeout=45, proxies={"http": working_ip[current_ip],
                                                                        "https": working_ip[current_ip]})
             response = str(r.text)
             if "assets.mountWidget(" not in response:

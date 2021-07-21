@@ -527,4 +527,4 @@ def collect_data(lower_page, higher_page, all_pages, thread_number, scrape_url, 
 # lower page has to start at 1
 
 if __name__ == '__main__':
-    print('hi')
+    print('this doesnt do anything')
