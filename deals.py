@@ -17,6 +17,6 @@ if __name__ == "__main__":
         if review_data is None:
             print("No reviews, skipped")
             continue
-            
+
         run_deals(review_data, gpt3_data, id, price, product_images, short_description, long_description, category, asin)
         id = id + 1

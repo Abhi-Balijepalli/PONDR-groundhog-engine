@@ -306,8 +306,24 @@ def get_page_num(url2):
                 print('to many stops, reassigning randint')
                 stop_count = 0
             continue
-
+            
     data = e.extract(r.text)
+    return_string = data['review_number']
+    search_string = re.search('ratings (.+?)global reviews', return_string)
+    if search_string is None:
+        all_pages = 1
+        return
+    print('search string' + str(search_string))
+    search_string = search_string.group(1)
+    search_string = search_string.replace('|', '')
+    search_string = search_string.replace(',', '')
+    review_int = int(float(search_string))
+    page_int = int(review_int / 10)  # add plus one
+    if review_int % 10 != 0:
+        page_int = page_int + 1
+
+    all_pages = page_int
+
     for r in data['reviews']:
         r["product"] = data["product_title"]
         r['url'] = scrape_url + '1'
@@ -336,22 +352,6 @@ def get_page_num(url2):
         txt_outfile.append(r['content'] + "\n")
     global total_pages_scrapped
     total_pages_scrapped = total_pages_scrapped + 1
-
-    return_string = data['review_number']
-    search_string = re.search('ratings (.+?)global reviews', return_string)
-    if search_string is None:
-        all_pages = 1
-        return
-    print('search string' + str(search_string))
-    search_string = search_string.group(1)
-    search_string = search_string.replace('|', '')
-    search_string = search_string.replace(',', '')
-    review_int = int(float(search_string))
-    page_int = int(review_int / 10)  # add plus one
-    if review_int % 10 != 0:
-        page_int = page_int + 1
-
-    all_pages = page_int
 
 
 def run_deals_scrapping(asin_to_scrape):
