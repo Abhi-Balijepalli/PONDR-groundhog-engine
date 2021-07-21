@@ -364,6 +364,7 @@ def run_deals_scrapping(asin_to_scrape):
     global all_pages
     global page_percentage
     global total_pages_scrapped
+    all_pages = 0
     old_randints = [None]
     total_pages_scrapped = 0
     page_percentage = 0
