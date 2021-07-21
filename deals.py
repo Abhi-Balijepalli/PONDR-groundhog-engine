@@ -39,4 +39,4 @@ if __name__ == "__main__":
             print('@@@@@@@@@@ Joining Threads @@@@@@@@@@')
             for t in deals_threads:
                 t.join()
-        continue
+            deals_thread = []
