@@ -3,20 +3,39 @@ from deals_reviews import run_deals_scrapping
 from deals_models import run_deals
 import requests
 import json
+from threading import Thread
+import sys
+import time
+
+
+def do_everything(id, asin):
+    review_data, gpt3_data, price, product_images, short_description, long_description, category = run_deals_scrapping(
+        asin)
+    if review_data is None:
+        print("No reviews, skipped")
+        sys.exit()
+
+    run_deals(review_data, gpt3_data, id, price, product_images, short_description, long_description, category, asin)
+
 
 if __name__ == "__main__":
 
-    asin_list = get_deals_of_the_day('https://www.amazon.com/events/collegedeals?ref=deals_deals_deals-grid_slot-15_39f3_dt_dcell_img_2_024739bb')
+    asin_list = get_deals_of_the_day(
+        'https://www.amazon.com/events/collegedeals?ref=deals_deals_deals-grid_slot-15_39f3_dt_dcell_img_2_024739bb')
     r = requests.get('https://groundhog.letspondr.com/asins')
     old_asin_list = json.loads(r.text)
     final_asin_list = list(set(asin_list + old_asin_list['IDs']))
     print(final_asin_list)
     id = 0
+    deals_threads = []
     for asin in final_asin_list:
-        review_data, gpt3_data, price, product_images, short_description, long_description, category = run_deals_scrapping(asin)
-        if review_data is None:
-            print("No reviews, skipped")
-            continue
-
-        run_deals(review_data, gpt3_data, id, price, product_images, short_description, long_description, category, asin)
+        print('Starting thread number ' + str(id))
+        deals_thread = Thread(target=do_everything, args=(id, asin))
+        deals_threads.append(deals_thread)
+        deals_thread.start()
+        time.sleep(1)
         id = id + 1
+        if id % 5 == 0:
+            print('@@@@@@@@@@ Joining Threads @@@@@@@@@@')
+            for t in deals_threads:
+                t.join()

@@ -178,7 +178,6 @@ def get_deals_of_the_day(front_url):
             deals_asin.append(individual_deal['reviewAsin'])
         else:
             print(individual_deal)
-    deals_asin.remove('B0864K61J8')
     return deals_asin
 
 
