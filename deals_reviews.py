@@ -306,7 +306,7 @@ def get_page_num(url2):
                 print('to many stops, reassigning randint')
                 stop_count = 0
             continue
-            
+
     data = e.extract(r.text)
     return_string = data['review_number']
     search_string = re.search('ratings (.+?)global reviews', return_string)
@@ -319,6 +319,8 @@ def get_page_num(url2):
     search_string = search_string.replace(',', '')
     review_int = int(float(search_string))
     page_int = int(review_int / 10)  # add plus one
+    if review_int == 0:
+        return
     if review_int % 10 != 0:
         page_int = page_int + 1
 
@@ -362,6 +364,7 @@ def run_deals_scrapping(asin_to_scrape):
     global all_pages
     global page_percentage
     global total_pages_scrapped
+    old_randints = [None]
     total_pages_scrapped = 0
     page_percentage = 0
     asin = asin_to_scrape
