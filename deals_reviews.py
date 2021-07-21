@@ -192,7 +192,7 @@ def scrape(url2, ip_index, thread_number):
 
 
 def get_product_page(front_url):
-    global product_page_dict
+    global product_page_dict, driver
 
     product_info = {}
     product_info['name'] = 0
@@ -250,6 +250,7 @@ def get_product_page(front_url):
                 product_info['long_description'] = 0
         except:
             print('proxy took to long, trying new proxy')
+            driver.close()
             PROXY = working_ip[random.randint(0, len(working_ip) - 1)]
 
     product_page_dict.append(product_info)  # Append scrape to dictionary
