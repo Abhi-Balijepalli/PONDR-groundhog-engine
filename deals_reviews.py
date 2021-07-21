@@ -349,10 +349,7 @@ def get_page_num(url2, scrape_url, thread_id):
 
 
 def run_deals_scrapping(asin_to_scrape, thread_id):
-    global thread_variables
-    thread_variables[thread_id] = {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [],
-                                   'product_page_dict': [], 'all_pages': 0, 'old_randints': [None],
-                                   'total_pages_scrapped': 0, 'page_percentage': 0, }
+    thread_variables[thread_id] = {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [], 'product_page_dict': [], 'all_pages': 0, 'old_randints': [None], 'total_pages_scrapped': 0, 'page_percentage': 0, }
 
     asin = asin_to_scrape
     print(asin)
