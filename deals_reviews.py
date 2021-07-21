@@ -150,8 +150,9 @@ def scrape(url2, ip_index, thread_number, thread_id):
         r = ''
         while r == '':
             try:
-                r = site_response.get(url2, headers=headers, proxies={"http": thread_variables[thread_id]['working_ip'][randint],
-                                                                      "https": thread_variables[thread_id]['working_ip'][randint]}, timeout=45)
+                r = site_response.get(url2, headers=headers,
+                                      proxies={"http": thread_variables[thread_id]['working_ip'][randint],
+                                               "https": thread_variables[thread_id]['working_ip'][randint]}, timeout=45)
                 break
             except:
                 if thread_variables[thread_id]['page_percentage'] >= 90:  # change for more or less page percentage
@@ -165,7 +166,8 @@ def scrape(url2, ip_index, thread_number, thread_id):
                 stop_count = stop_count + 1
                 print("stop count " + str(stop_count))
                 if stop_count > 3:
-                    randint = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
+                    randint = random.randint(0, len(
+                        thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
                     thread_variables[thread_id]['old_randints'][thread_number - 1] = randint
                     # print('to many stops, reassigning randint')
                     stop_count = 0
@@ -182,7 +184,8 @@ def get_product_page(front_url, thread_id):
 
     product_info = {}
     product_info['name'] = 0
-    PROXY = thread_variables[thread_id]['working_ip'][random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)]
+    PROXY = thread_variables[thread_id]['working_ip'][
+        random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)]
     print("@@@@@@ getting product page @@@@@@")
 
     while product_info['name'] == 0:
@@ -237,10 +240,12 @@ def get_product_page(front_url, thread_id):
         except:
             print('proxy took to long, trying new proxy')
             driver.close()
-            PROXY = thread_variables[thread_id]['working_ip'][random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)]
+            PROXY = thread_variables[thread_id]['working_ip'][
+                random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)]
 
     thread_variables[thread_id]['product_page_dict'].append(product_info)  # Append scrape to dictionary
-    print(str(len(thread_variables[thread_id]['product_page_dict'])) + ' . ', end='')  # print the current length of the scrapes
+    print(str(len(thread_variables[thread_id]['product_page_dict'])) + ' . ',
+          end='')  # print the current length of the scrapes
 
     print(thread_variables[thread_id]['product_page_dict'])
 
@@ -270,8 +275,9 @@ def get_page_num(url2, scrape_url, thread_id):
     r = ''
     while r == '':
         try:
-            r = site_response.get(url2, headers=headers, proxies={"http": thread_variables[thread_id]['working_ip'][current_ip],
-                                                                  "https": thread_variables[thread_id]['working_ip'][current_ip]}, timeout=45)
+            r = site_response.get(url2, headers=headers,
+                                  proxies={"http": thread_variables[thread_id]['working_ip'][current_ip],
+                                           "https": thread_variables[thread_id]['working_ip'][current_ip]}, timeout=45)
             if e.extract(r.text)['review_number'] is None:
                 print('Amazon blocked so new ip')
                 current_ip = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)
@@ -288,7 +294,8 @@ def get_page_num(url2, scrape_url, thread_id):
             stop_count = stop_count + 1
             print("stop count " + str(stop_count))
             if stop_count > 3:
-                current_ip = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
+                current_ip = random.randint(0, len(
+                    thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
                 print('to many stops, reassigning randint')
                 stop_count = 0
             continue
@@ -343,9 +350,9 @@ def get_page_num(url2, scrape_url, thread_id):
 
 def run_deals_scrapping(asin_to_scrape, thread_id):
     global thread_variables
-    thread_variables = {thread_id: {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [],
-                                         'product_page_dict': [], 'all_pages': 0, 'old_randints': [None],
-                                         'total_pages_scrapped': 0, 'page_percentage': 0, }}
+    thread_variables[thread_id] = {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [],
+                                   'product_page_dict': [], 'all_pages': 0, 'old_randints': [None],
+                                   'total_pages_scrapped': 0, 'page_percentage': 0, }
 
     asin = asin_to_scrape
     print(asin)
@@ -394,9 +401,11 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
     print(thread_variables[thread_id]['all_pages'])
 
     pages_per_thread = 1
-    num_of_loops = int(thread_variables[thread_id]['all_pages'] / pages_per_thread)  # how many loops/ threads are needed
+    num_of_loops = int(
+        thread_variables[thread_id]['all_pages'] / pages_per_thread)  # how many loops/ threads are needed
     tens = 2  # the lower bound of the scrape() method
-    thread_variables[thread_id]['old_randints'] = thread_variables[thread_id]['old_randints'] * num_of_loops  # making a list of size num_of_loops for proxy_index storage
+    thread_variables[thread_id]['old_randints'] = thread_variables[thread_id][
+                                                      'old_randints'] * num_of_loops  # making a list of size num_of_loops for proxy_index storage
 
     scrape_threads = []
 
@@ -404,9 +413,11 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
     i = 2
     while i <= num_of_loops:
         time.sleep(1)
-        thread_variables[thread_id]['old_randints'][i - 1] = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)
+        thread_variables[thread_id]['old_randints'][i - 1] = random.randint(0, len(
+            thread_variables[thread_id]['working_ip']) - 1)
         print("current loop " + str(i))
-        thread = Thread(target=collect_data, args=(tens, (i * pages_per_thread) + 1, thread_variables[thread_id]['all_pages'], i, scrape_url, thread_id))
+        thread = Thread(target=collect_data, args=(
+        tens, (i * pages_per_thread) + 1, thread_variables[thread_id]['all_pages'], i, scrape_url, thread_id))
         tens = tens + pages_per_thread
         i = i + 1
         scrape_threads.append(thread)
@@ -419,14 +430,19 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
     # for t in productThreads:
     #    t.join()
 
-    return thread_variables[thread_id]['csv_outfile'], thread_variables[thread_id]['txt_outfile'], thread_variables[thread_id]['product_page_dict'][0]['price'], thread_variables[thread_id]['product_page_dict'][0]['images'], \
-           thread_variables[thread_id]['product_page_dict'][0]['feature_bullets'], thread_variables[thread_id]['product_page_dict'][0]['long_description'], thread_variables[thread_id]['product_page_dict'][0]['category']
+    return thread_variables[thread_id]['csv_outfile'], thread_variables[thread_id]['txt_outfile'], \
+           thread_variables[thread_id]['product_page_dict'][0]['price'], \
+           thread_variables[thread_id]['product_page_dict'][0]['images'], \
+           thread_variables[thread_id]['product_page_dict'][0]['feature_bullets'], \
+           thread_variables[thread_id]['product_page_dict'][0]['long_description'], \
+           thread_variables[thread_id]['product_page_dict'][0]['category']
 
 
 def collect_data(lower_page, higher_page, all_pages, thread_number, scrape_url, thread_id):
     for i in range(lower_page, higher_page):
 
-        data = scrape(scrape_url + str(i), thread_variables[thread_id]['old_randints'][thread_number - 1], thread_number, thread_id)
+        data = scrape(scrape_url + str(i), thread_variables[thread_id]['old_randints'][thread_number - 1],
+                      thread_number, thread_id)
         # appends the page number to the end of the url
         print('total page scrapped ' + str(thread_variables[thread_id]['total_pages_scrapped']))
         print('collect_data page percentage ')
@@ -438,8 +454,10 @@ def collect_data(lower_page, higher_page, all_pages, thread_number, scrape_url, 
                 try:
                     print('Amazon blocked so scrapping again')
                     print(thread_variables[thread_id]['old_randints'][thread_number - 1])
-                    print('ip deleting ' + thread_variables[thread_id]['working_ip'][thread_variables[thread_id]['old_randints'][thread_number - 1]])
-                    del thread_variables[thread_id]['working_ip'][thread_variables[thread_id]['old_randints'][thread_number - 1]]
+                    print('ip deleting ' + thread_variables[thread_id]['working_ip'][
+                        thread_variables[thread_id]['old_randints'][thread_number - 1]])
+                    del thread_variables[thread_id]['working_ip'][
+                        thread_variables[thread_id]['old_randints'][thread_number - 1]]
                     if len(thread_variables[thread_id]['working_ip']) < 5:
                         ip_threads = []  # lists of threads to join
                         high_i = 2
@@ -455,12 +473,15 @@ def collect_data(lower_page, higher_page, all_pages, thread_number, scrape_url, 
                         for t in ip_threads:
                             t.join()  # joins all started threads to find working ups
 
-                    thread_variables[thread_id]['old_randints'][thread_number - 1] = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)
+                    thread_variables[thread_id]['old_randints'][thread_number - 1] = random.randint(0, len(
+                        thread_variables[thread_id]['working_ip']) - 1)
                 except:
                     print('ip already deleted, assigning new randint')
-                    thread_variables[thread_id]['old_randints'][thread_number - 1] = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)
+                    thread_variables[thread_id]['old_randints'][thread_number - 1] = random.randint(0, len(
+                        thread_variables[thread_id]['working_ip']) - 1)
 
-                data = scrape(scrape_url + str(i), thread_variables[thread_id]['old_randints'][thread_number - 1], thread_number, thread_id)
+                data = scrape(scrape_url + str(i), thread_variables[thread_id]['old_randints'][thread_number - 1],
+                              thread_number, thread_id)
                 if data is None:
                     print('exiting!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                     sys.exit()  # exiting if the percentage is 90 or more
@@ -495,8 +516,10 @@ def collect_data(lower_page, higher_page, all_pages, thread_number, scrape_url, 
                     # gptoutfile.write(r['content'] + "\n")
                     thread_variables[thread_id]['txt_outfile'].append(r['content'] + "\n")
                     print(str(r))
-                thread_variables[thread_id]['total_pages_scrapped'] = thread_variables[thread_id]['total_pages_scrapped'] + 1
-                thread_variables[thread_id]['page_percentage'] = round((thread_variables[thread_id]['total_pages_scrapped'] / all_pages) * 100, 2)
+                thread_variables[thread_id]['total_pages_scrapped'] = thread_variables[thread_id][
+                                                                          'total_pages_scrapped'] + 1
+                thread_variables[thread_id]['page_percentage'] = round(
+                    (thread_variables[thread_id]['total_pages_scrapped'] / all_pages) * 100, 2)
                 print(str(thread_variables[thread_id]['page_percentage']) + "%")
                 # sleep(random.randint(1, 2))
 
