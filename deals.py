@@ -10,7 +10,7 @@ import time
 
 def do_everything(id, asin):
     review_data, gpt3_data, price, product_images, short_description, long_description, category = run_deals_scrapping(
-        asin)
+        asin, id)
     if review_data is None:
         print("No reviews, skipped")
         sys.exit()
