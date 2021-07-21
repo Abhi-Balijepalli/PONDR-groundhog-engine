@@ -180,7 +180,6 @@ def scrape(url2, ip_index, thread_number, thread_id):
 
 
 def get_product_page(front_url, thread_id):
-    global driver
 
     product_info = {}
     product_info['name'] = 0
@@ -192,36 +191,36 @@ def get_product_page(front_url, thread_id):
         try:
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--proxy-server=%s' % PROXY)
-            driver = webdriver.Chrome(chrome_options=chrome_options,
+            thread_variables[thread_id]['driver'] = webdriver.Chrome(chrome_options=chrome_options,
                                       executable_path="/usr/lib/chromium-browser/chromedriver")
 
             print('starting download...')
             url = front_url
-            driver.get(url)
-            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
+            thread_variables[thread_id]['driver'].get(url)
+            WebDriverWait(thread_variables[thread_id]['driver'], 10).until(EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
             try:
-                name = driver.find_element_by_xpath('//span[@id="productTitle"]')
+                name = thread_variables[thread_id]['driver'].find_element_by_xpath('//span[@id="productTitle"]')
                 product_info['name'] = name.text.strip()
             except:
                 product_info['name'] = 0
             try:
-                price = driver.find_element_by_xpath("(//span[contains(@class,'a-color-price')])[1]")
+                price = thread_variables[thread_id]['driver'].find_element_by_xpath("(//span[contains(@class,'a-color-price')])[1]")
                 product_info['price'] = price.text
             except:
                 product_info['price'] = 0
             try:
-                category = driver.find_element_by_xpath("/html/body/div[1]/div[3]/div[7]/div/div/ul/li[1]/span/a")
+                category = thread_variables[thread_id]['driver'].find_element_by_xpath("/html/body/div[1]/div[3]/div[7]/div/div/ul/li[1]/span/a")
                 product_info['category'] = category.text.strip()
             except:
                 product_info['category'] = 0
             try:
-                feature_bullets = driver.find_element_by_xpath('//*[@id="feature-bullets"]')
+                feature_bullets = thread_variables[thread_id]['driver'].find_element_by_xpath('//*[@id="feature-bullets"]')
                 product_info['feature_bullets'] = feature_bullets.text
             except:
                 product_info['feature_bullets'] = 0
             try:
                 high_res_image = []
-                images = [my_elem.get_attribute("src") for my_elem in WebDriverWait(driver, 20).until(
+                images = [my_elem.get_attribute("src") for my_elem in WebDriverWait(thread_variables[thread_id]['driver'], 20).until(
                     EC.visibility_of_all_elements_located(
                         (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
                 for image in images:
@@ -232,14 +231,14 @@ def get_product_page(front_url, thread_id):
             except:
                 product_info['images'] = 0
             try:
-                long_description = driver.find_element_by_xpath(
+                long_description = thread_variables[thread_id]['driver'].find_element_by_xpath(
                     '/html/body/div[1]/div[3]/div[9]/div[28]/div/div[2]/div/div/div/div[2]/p')
                 product_info['long_description'] = long_description.text
             except:
                 product_info['long_description'] = 0
         except:
             print('proxy took to long, trying new proxy')
-            driver.close()
+            thread_variables[thread_id]['driver'].close()
             PROXY = thread_variables[thread_id]['working_ip'][
                 random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)]
 
@@ -353,11 +352,11 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
     if thread_id == 0:
         thread_variables = {
             10000: {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [], 'product_page_dict': [],
-                    'all_pages': 0, 'old_randints': [None], 'total_pages_scrapped': 0, 'page_percentage': 0, }}
+                    'all_pages': 0, 'old_randints': [None], 'total_pages_scrapped': 0, 'page_percentage': 0, 'driver': webdriver}}
 
     thread_variables[thread_id] = {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [],
                                    'product_page_dict': [], 'all_pages': 0, 'old_randints': [None],
-                                   'total_pages_scrapped': 0, 'page_percentage': 0, }
+                                   'total_pages_scrapped': 0, 'page_percentage': 0, 'driver': webdriver}
 
     asin = asin_to_scrape
     print(asin)
