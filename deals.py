@@ -34,8 +34,8 @@ if __name__ == "__main__":
         deals_threads.append(deals_thread)
         deals_thread.start()
         time.sleep(1)
-        id = id + 1
         if id % 5 == 0:
             print('@@@@@@@@@@ Joining Threads @@@@@@@@@@')
             for t in deals_threads:
                 t.join()
+        id = id + 1

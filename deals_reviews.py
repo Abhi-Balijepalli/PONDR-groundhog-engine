@@ -247,6 +247,7 @@ def get_product_page(front_url, thread_id):
           end='')  # print the current length of the scrapes
 
     print(thread_variables[thread_id]['product_page_dict'])
+    thread_variables[thread_id]['driver'].close()
 
 
 def get_page_num(url2, scrape_url, thread_id):
