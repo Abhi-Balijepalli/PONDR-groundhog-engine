@@ -405,7 +405,7 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
         time.sleep(1)
         thread_variables[thread_id]['old_randints'][i - 1] = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)
         print("current loop " + str(i))
-        thread = Thread(target=collect_data, args=(tens, (i * pages_per_thread) + 1, thread_variables[thread_id]['all_pages'], i, scrape_url))
+        thread = Thread(target=collect_data, args=(tens, (i * pages_per_thread) + 1, thread_variables[thread_id]['all_pages'], i, scrape_url, thread_id))
         tens = tens + pages_per_thread
         i = i + 1
         scrape_threads.append(thread)
