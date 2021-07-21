@@ -100,6 +100,7 @@ def find_ip(lower_range, upper_range, thread_id):
     session = requests.Session()
     for i in range(lower_range, upper_range):
         # Get a proxy from the pool
+        print(thread_variables)
         proxy = next(thread_variables[thread_id]['proxy_pool'])
         print("Request #%d" % i)
         try:
