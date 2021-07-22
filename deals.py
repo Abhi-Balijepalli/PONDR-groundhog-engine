@@ -20,7 +20,7 @@ def do_everything(id, asin):
 
 if __name__ == "__main__":
 
-    asin_list = get_deals_of_the_day('https://www.amazon.com/events/schooldeals')
+    asin_list = get_deals_of_the_day('https://www.amazon.com/events/schooldeals?deals-widget=%257B%2522version%2522%253A1%252C%2522viewIndex%2522%253A120%252C%2522presetId%2522%253A%252269E6682423D4F1255D9B2634EC7DD8C1%2522%252C%2522dealType%2522%253A%2522DEAL_OF_THE_DAY%2522%252C%2522sorting%2522%253A%2522BY_SCORE%2522%257D')
     r = requests.get('https://groundhog.letspondr.com/asins')
     old_asin_list = json.loads(r.text)
     print(old_asin_list['IDs'])
