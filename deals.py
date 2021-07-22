@@ -35,7 +35,7 @@ if __name__ == "__main__":
         deals_thread.start()
         time.sleep(1)
         id = id + 1
-        if id % 20 == 0:
+        if id % 15 == 0:
             print('@@@@@@@@@@ Joining Threads @@@@@@@@@@')
             for t in deals_threads:
                 t.join()
