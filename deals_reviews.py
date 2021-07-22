@@ -2,6 +2,7 @@ import random
 import re
 import sys
 import time
+import json
 from collections import OrderedDict
 from itertools import cycle
 from threading import Thread
@@ -81,21 +82,12 @@ def get_proxies():  # getting proxies by scrapping the site for free
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
             proxies.add(proxy)
 
-    chrome_options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(chrome_options=chrome_options, executable_path="/usr/lib/chromium-browser/chromedriver")
-    print('starting download...')
-    driver.get('https://geonode.com/free-proxy-list')
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
-        (By.XPATH, '/html/body/div[1]/div/div/main/div/div[2]/div[2]/div/div[1]/div[4]/table/tbody/tr[1]/td[1]')))
-    for i in range(1, 51):
-        try:
-            ip = driver.find_element_by_xpath(
-                '/html/body/div[1]/div/div/main/div/div[2]/div[2]/div/div[1]/div[4]/table/tbody/tr[' + str(
-                    i) + ']/td[1]')
-            proxies.add(ip)
-        except:
-            pass
-    driver.close()
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=US')
+    json_ip = json.loads(r.text)['data']
+
+    for data in json_ip:
+        proxies.add((data['ip']))
 
     return proxies
 
