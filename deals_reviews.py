@@ -179,7 +179,6 @@ def scrape(url2, ip_index, thread_number, thread_id):
 
 
 def get_product_page(front_url, thread_id):
-
     product_info = {}
     product_info['name'] = 0
     PROXY = thread_variables[thread_id]['working_ip'][
@@ -191,38 +190,52 @@ def get_product_page(front_url, thread_id):
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--proxy-server=%s' % PROXY)
             thread_variables[thread_id]['driver'] = webdriver.Chrome(chrome_options=chrome_options,
-                                      executable_path="/usr/lib/chromium-browser/chromedriver")
+                                                                     executable_path="/usr/lib/chromium-browser/chromedriver")
 
             print('starting download...')
             url = front_url
             thread_variables[thread_id]['driver'].set_page_load_timeout(35)
             thread_variables[thread_id]['driver'].get(url)
-            WebDriverWait(thread_variables[thread_id]['driver'], 10).until(EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
+            WebDriverWait(thread_variables[thread_id]['driver'], 10).until(
+                EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
             try:
                 name = thread_variables[thread_id]['driver'].find_element_by_xpath('//span[@id="productTitle"]')
                 product_info['name'] = name.text.strip()
             except:
                 product_info['name'] = 0
             try:
-                price = thread_variables[thread_id]['driver'].find_element_by_xpath("(//span[contains(@class,'a-color-price')])[1]")
+                price = thread_variables[thread_id]['driver'].find_element_by_xpath(
+                    "(//span[contains(@class,'a-color-price')])[1]")
                 product_info['price'] = price.text
             except:
                 product_info['price'] = 0
+
+            def category():
+                for a in range(1, 10):
+                    for b in range(1, 10):
+                        for c in range(1, 10):
+                            try:
+                                category = thread_variables[thread_id]['driver'].find_element_by_xpath(
+                                    "/html/body/div[" + str(a) + "]/div[" + str(b) + "]/div[" + str(
+                                        c) + "]/div/div/ul/li[1]/span/a")
+                                product_info['category'] = category.text.strip()
+                                return
+                            except:
+                                product_info['category'] = 0
+            category()
+
             try:
-                category = thread_variables[thread_id]['driver'].find_element_by_xpath("/html/body/div[1]/div[3]/div[7]/div/div/ul/li[1]/span/a")
-                product_info['category'] = category.text.strip()
-            except:
-                product_info['category'] = 0
-            try:
-                feature_bullets = thread_variables[thread_id]['driver'].find_element_by_xpath('//*[@id="feature-bullets"]')
+                feature_bullets = thread_variables[thread_id]['driver'].find_element_by_xpath(
+                    '//*[@id="feature-bullets"]')
                 product_info['feature_bullets'] = feature_bullets.text
             except:
                 product_info['feature_bullets'] = 0
             try:
                 high_res_image = []
-                images = [my_elem.get_attribute("src") for my_elem in WebDriverWait(thread_variables[thread_id]['driver'], 20).until(
-                    EC.visibility_of_all_elements_located(
-                        (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
+                images = [my_elem.get_attribute("src") for my_elem in
+                          WebDriverWait(thread_variables[thread_id]['driver'], 20).until(
+                              EC.visibility_of_all_elements_located(
+                                  (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
                 for image in images:
                     search_string = re.search('/I/(.+?)._', image)
                     high_res_image.append(
@@ -353,7 +366,8 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
     if thread_id == 0:
         thread_variables = {
             10000: {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [], 'product_page_dict': [],
-                    'all_pages': 0, 'old_randints': [None], 'total_pages_scrapped': 0, 'page_percentage': 0, 'driver': webdriver}}
+                    'all_pages': 0, 'old_randints': [None], 'total_pages_scrapped': 0, 'page_percentage': 0,
+                    'driver': webdriver}}
 
     thread_variables[thread_id] = {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [],
                                    'product_page_dict': [], 'all_pages': 0, 'old_randints': [None],
