@@ -80,6 +80,22 @@ def get_proxies():  # getting proxies by scrapping the site for free
         if i.xpath('.//td[7][contains(text(),"yes")]'):
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
             proxies.add(proxy)
+
+    driver = webdriver.Chrome()
+    print('starting download...')
+    driver.get('https://geonode.com/free-proxy-list')
+    WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
+        (By.XPATH, '/html/body/div[1]/div/div/main/div/div[2]/div[2]/div/div[1]/div[4]/table/tbody/tr[1]/td[1]')))
+    for i in range(1, 51):
+        try:
+            ip = driver.find_element_by_xpath(
+                '/html/body/div[1]/div/div/main/div/div[2]/div[2]/div/div[1]/div[4]/table/tbody/tr[' + str(
+                    i) + ']/td[1]')
+            proxies.add(ip)
+        except:
+            pass
+    driver.close()
+
     return proxies
 
 
@@ -386,7 +402,7 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
     high_i = 2
     low_i = 1
 
-    while low_i < 76:  # change number here for num ips checked
+    while low_i < 126:  # change number here for num ips checked
         ip_thread = Thread(target=find_ip, args=(low_i, high_i, thread_id))
         ip_threads.append(ip_thread)
         ip_thread.start()
@@ -481,7 +497,7 @@ def collect_data(lower_page, higher_page, all_pages, thread_number, scrape_url, 
                         ip_threads = []  # lists of threads to join
                         high_i = 2
                         low_i = 1
-                        while low_i < 76:  # change number here for num ips checked
+                        while low_i < 126:  # change number here for num ips checked
                             ip_thread = Thread(target=find_ip, args=(low_i, high_i, thread_id))
                             ip_threads.append(ip_thread)
                             ip_thread.start()

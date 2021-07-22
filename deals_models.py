@@ -18,7 +18,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 today = date.today()
 
 
-def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_description, long_description, category, asin):
+def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_description, long_description, category, asin, type):
     nltk.download('wordnet')
     nltk.download('punkt')
     wnl = nltk.WordNetLemmatizer()
@@ -234,10 +234,15 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
         for entry in json_to_upload:
             writer.write(entry)
 
-    upload = openai.File.create(
-        file=open("upload.jsonl"),
-        purpose='answers'
-    )
+    upload = {}
+    while len(upload['id']) < 5:
+        try:
+            upload = openai.File.create(
+                file=open("upload.jsonl"),
+                purpose='answers'
+            )
+        except:
+            upload['id'] = ""
 
     print(upload['id'])
     max_index = whole_review_sentiment.index(max(whole_review_sentiment))  # calculated max index for max review
@@ -291,7 +296,7 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
                 "short_description": short_description,
                 "long_description": long_description,
                 "category": str(category),
-                "type": "school",
+                "type": type,
                 "raw-reviews": json_to_upload
             },
             "gpt3_form_id": upload['id'],
