@@ -82,7 +82,7 @@ def get_proxies():  # getting proxies by scrapping the site for free
             proxies.add(proxy)
 
     chrome_options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(chrome_options=chrome_options, executable_path="/usr/lib/chromium-browser/chromedriver")
+    driver = webdriver.Chrome()
     print('starting download...')
     driver.get('https://geonode.com/free-proxy-list')
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
@@ -206,8 +206,7 @@ def get_product_page(front_url, thread_id):
         try:
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--proxy-server=%s' % PROXY)
-            thread_variables[thread_id]['driver'] = webdriver.Chrome(chrome_options=chrome_options,
-                                                                     executable_path="/usr/lib/chromium-browser/chromedriver")
+            thread_variables[thread_id]['driver'] = webdriver.Chrome()
 
             print('starting download...')
             url = front_url
