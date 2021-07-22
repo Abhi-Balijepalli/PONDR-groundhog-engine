@@ -81,7 +81,8 @@ def get_proxies():  # getting proxies by scrapping the site for free
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
             proxies.add(proxy)
 
-    driver = webdriver.Chrome()
+    chrome_options = webdriver.ChromeOptions()
+    driver = webdriver.Chrome(chrome_options=chrome_options, executable_path="/usr/lib/chromium-browser/chromedriver")
     print('starting download...')
     driver.get('https://geonode.com/free-proxy-list')
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
