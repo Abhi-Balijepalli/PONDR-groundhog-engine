@@ -2,6 +2,7 @@ import random
 import re
 import sys
 import time
+import json
 from collections import OrderedDict
 from itertools import cycle
 from threading import Thread
@@ -81,21 +82,12 @@ def get_proxies():  # getting proxies by scrapping the site for free
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
             proxies.add(proxy)
 
-    chrome_options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome()
-    print('starting download...')
-    driver.get('https://geonode.com/free-proxy-list')
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
-        (By.XPATH, '/html/body/div[1]/div/div/main/div/div[2]/div[2]/div/div[1]/div[4]/table/tbody/tr[1]/td[1]')))
-    for i in range(1, 51):
-        try:
-            ip = driver.find_element_by_xpath(
-                '/html/body/div[1]/div/div/main/div/div[2]/div[2]/div/div[1]/div[4]/table/tbody/tr[' + str(
-                    i) + ']/td[1]')
-            proxies.add(ip)
-        except:
-            pass
-    driver.close()
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=US')
+    json_ip = json.loads(r.text)['data']
+
+    for data in json_ip:
+        proxies.add((data['ip']))
 
     return proxies
 
@@ -182,7 +174,8 @@ def scrape(url2, ip_index, thread_number, thread_id):
                 stop_count = stop_count + 1
                 print("stop count " + str(stop_count))
                 if stop_count > 3:
-                    randint = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
+                    randint = random.randint(0, len(
+                        thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
                     print('scraping reviews, too many randints assigned new ip')
                     thread_variables[thread_id]['old_randints'][thread_number - 1] = randint
                     # print('to many stops, reassigning randint')
@@ -238,6 +231,7 @@ def get_product_page(front_url, thread_id):
                                 return
                             except:
                                 product_info['category'] = 0
+
             category()
 
             try:
