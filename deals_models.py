@@ -235,6 +235,7 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
             writer.write(entry)
 
     upload = {}
+    upload['id'] = ""
     while len(upload['id']) < 5:
         try:
             upload = openai.File.create(
