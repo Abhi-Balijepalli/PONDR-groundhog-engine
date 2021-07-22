@@ -151,7 +151,7 @@ def scrape(url2, ip_index, thread_number, thread_id):
             try:
                 r = site_response.get(url2, headers=headers,
                                       proxies={"http": thread_variables[thread_id]['working_ip'][randint],
-                                               "https": thread_variables[thread_id]['working_ip'][randint]}, timeout=35)
+                                               "https": thread_variables[thread_id]['working_ip'][randint]}, timeout=45)
                 break
             except:
                 if thread_variables[thread_id]['page_percentage'] >= 90:  # change for more or less page percentage
@@ -165,8 +165,8 @@ def scrape(url2, ip_index, thread_number, thread_id):
                 stop_count = stop_count + 1
                 print("stop count " + str(stop_count))
                 if stop_count > 3:
-                    randint = random.randint(0, len(
-                        thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
+                    randint = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
+                    print('scraping reviews, too many randints assigned new ip')
                     thread_variables[thread_id]['old_randints'][thread_number - 1] = randint
                     # print('to many stops, reassigning randint')
                     stop_count = 0
@@ -194,7 +194,7 @@ def get_product_page(front_url, thread_id):
 
             print('starting download...')
             url = front_url
-            thread_variables[thread_id]['driver'].set_page_load_timeout(35)
+            thread_variables[thread_id]['driver'].set_page_load_timeout(45)
             thread_variables[thread_id]['driver'].get(url)
             WebDriverWait(thread_variables[thread_id]['driver'], 10).until(
                 EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
@@ -290,7 +290,7 @@ def get_page_num(url2, scrape_url, thread_id):
         try:
             r = site_response.get(url2, headers=headers,
                                   proxies={"http": thread_variables[thread_id]['working_ip'][current_ip],
-                                           "https": thread_variables[thread_id]['working_ip'][current_ip]}, timeout=35)
+                                           "https": thread_variables[thread_id]['working_ip'][current_ip]}, timeout=45)
             if e.extract(r.text)['review_number'] is None:
                 print('Amazon blocked so new ip')
                 current_ip = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)
