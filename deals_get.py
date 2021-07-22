@@ -174,7 +174,7 @@ def get_deals_of_the_day(front_url):
     for key_object in dealDetails:
         individual_deal = dealDetails[key_object]
         if 'reviewAsin' in individual_deal:
-            print(individual_deal['reviewAsin'])
+            #  print(individual_deal['reviewAsin'])
             deals_asin.append(individual_deal['reviewAsin'])
         else:
             print(individual_deal)

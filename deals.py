@@ -24,8 +24,15 @@ if __name__ == "__main__":
         'https://www.amazon.com/events/collegedeals?ref=deals_deals_deals-grid_slot-15_39f3_dt_dcell_img_2_024739bb')
     r = requests.get('https://groundhog.letspondr.com/asins')
     old_asin_list = json.loads(r.text)
-    final_asin_list = list(set(asin_list + old_asin_list['IDs']))
+    print(old_asin_list['IDs'])
+    print(asin_list)
+    final_asin_list = []
+    for raw_asin in asin_list:
+        if raw_asin not in old_asin_list['IDs']:
+            final_asin_list.append(raw_asin)
+
     print(final_asin_list)
+
     id = 0
     deals_threads = []
     for asin in final_asin_list:
