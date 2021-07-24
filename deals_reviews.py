@@ -124,7 +124,7 @@ def find_ip(lower_range, upper_range, thread_id):
 
 def scrape(url2, ip_index, thread_number, thread_id):
     #  print("This is the page percentage!!!!!!!!!!!!" + str(thread_variables[thread_id]['page_percentage']))
-    if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1200:  # change for more or less page percentage
+    if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1500:  # change for more or less page percentage
         return None
     else:
         # Create an Extractor by reading from the YAML file
@@ -163,7 +163,7 @@ def scrape(url2, ip_index, thread_number, thread_id):
                                                "https": thread_variables[thread_id]['working_ip'][randint]}, timeout=45)
                 break
             except:
-                if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1200:  # change for more or less page percentage
+                if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1500:  # change for more or less page percentage
                     break
                 sleep_time = 5
                 print("Connection refused by the server..")
@@ -182,7 +182,7 @@ def scrape(url2, ip_index, thread_number, thread_id):
                     stop_count = 0
                 continue
         # Simple check to check if page was blocked (Usually 503)
-        if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1200:  # change for more or less page percentage
+        if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1500:  # change for more or less page percentage
             return None
         print(str(r.status_code))
         return e.extract(r.text)
