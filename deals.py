@@ -20,31 +20,35 @@ def do_everything(id, asin, type):
 
 
 if __name__ == "__main__":
-    link = input('link? ')
+    first_page = int(input('first page? '))
+    last_page = int(input('last page? '))
     type = input('type ')
-    asin_list = get_deals_of_the_day(link)
-    r = requests.get('https://groundhog.letspondr.com/asins')
-    old_asin_list = json.loads(r.text)
-    print(old_asin_list['IDs'])
-    print(asin_list)
-    final_asin_list = []
-    for raw_asin in asin_list:
-        if raw_asin not in old_asin_list['IDs']:
-            final_asin_list.append(raw_asin)
 
-    print(final_asin_list)
+    for i in range(first_page, last_page + 1):
+        link = "https://www.amazon.com/gp/goldbox/?deals-widget=%257B%2522version%2522%253A1%252C%2522viewIndex%2522%253A" + str(i*60) + "%252C%2522presetId%2522%253A%2522E0CC976FC92938FBCE3AED450B499476%2522%252C%2522sorting%2522%253A%2522BY_CUSTOM_CRITERION%2522%257D"
+        asin_list = get_deals_of_the_day(link)
+        r = requests.get('https://groundhog.letspondr.com/asins')
+        old_asin_list = json.loads(r.text)
+        print(old_asin_list['IDs'])
+        print(asin_list)
+        final_asin_list = []
+        for raw_asin in asin_list:
+            if raw_asin not in old_asin_list['IDs']:
+                final_asin_list.append(raw_asin)
 
-    id = 0
-    deals_threads = []
-    for asin in final_asin_list:
-        print('Starting thread number ' + str(id))
-        deals_thread = Thread(target=do_everything, args=(id, asin, type))
-        deals_threads.append(deals_thread)
-        deals_thread.start()
-        time.sleep(1)
-        id = id + 1
+        print(final_asin_list)
 
-    print('@@@@@@@@@@ Joining Threads @@@@@@@@@@')
-    for t in deals_threads:
-        t.join()
-    deals_thread = []
+        id = 0
+        deals_threads = []
+        for asin in final_asin_list:
+            print('Starting thread number ' + str(id))
+            deals_thread = Thread(target=do_everything, args=(id, asin, type))
+            deals_threads.append(deals_thread)
+            deals_thread.start()
+            time.sleep(1)
+            id = id + 1
+
+        print('@@@@@@@@@@ Joining Threads @@@@@@@@@@')
+        for t in deals_threads:
+            t.join()
+        deals_thread = []
