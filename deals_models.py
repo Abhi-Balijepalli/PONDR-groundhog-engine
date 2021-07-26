@@ -309,7 +309,8 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
         }
     }
 
-    with open('package_' + str(id_num) + '.json', 'w') as json_file:
-        json.dump(package, json_file)
+    if int(len(whole_reviews)) > 0:
+        with open('package_' + str(id_num) + '.json', 'w') as json_file:
+            json.dump(package, json_file)
 
-    send_deals_data(id_num)
+        send_deals_data(id_num)
