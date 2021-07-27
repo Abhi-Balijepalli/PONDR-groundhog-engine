@@ -206,7 +206,7 @@ def get_product_page(front_url, thread_id):
             url = front_url
             thread_variables[thread_id]['driver'].set_page_load_timeout(45)
             thread_variables[thread_id]['driver'].get(url)
-            WebDriverWait(thread_variables[thread_id]['driver'], 10).until(
+            WebDriverWait(thread_variables[thread_id]['driver'], 45).until(
                 EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
             try:
                 name = thread_variables[thread_id]['driver'].find_element_by_xpath('//span[@id="productTitle"]')
