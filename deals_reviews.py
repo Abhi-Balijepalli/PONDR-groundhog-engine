@@ -385,10 +385,7 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
 
     thread_variables[thread_id]['time_started'] = time.time()
 
-    asin = asin_to_scrape
-    print(asin)
-
-    scrape_url = 'https://www.amazon.com/product-reviews/' + asin + '/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
+    scrape_url = 'https://www.amazon.com/product-reviews/' + asin_to_scrape + '/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber='
 
     proxies = get_proxies()
     thread_variables[thread_id]['proxy_pool'] = cycle(proxies)
@@ -418,7 +415,7 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
     #    product_index = product_index + 1
     # product_page_thread = Thread(target=get_product_page, args=(url_to_scrape,))
     # product_page_thread.start()
-    product_page_thread = Thread(get_product_page("https://www.amazon.com/dp/" + asin, thread_id))
+    product_page_thread = Thread(get_product_page("https://www.amazon.com/dp/" + asin_to_scrape, thread_id))
     product_page_thread.start()
     time.sleep(1)
     get_page_num(scrape_url + '1', scrape_url, thread_id)
