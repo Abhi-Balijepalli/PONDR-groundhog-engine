@@ -1,4 +1,5 @@
 from deals_get import get_deals_of_the_day
+from get_search_asins import search_amazon
 from deals_reviews import run_deals_scrapping
 from deals_models import run_deals
 import requests
@@ -25,8 +26,8 @@ if __name__ == "__main__":
     type = input('type ')
 
     for i in range(first_page, last_page + 1):
-        link = "https://www.amazon.com/gp/goldbox/?deals-widget=%257B%2522version%2522%253A1%252C%2522viewIndex%2522%253A" + str(i*60) + "%252C%2522presetId%2522%253A%2522E0CC976FC92938FBCE3AED450B499476%2522%252C%2522sorting%2522%253A%2522BY_CUSTOM_CRITERION%2522%257D"
-        asin_list = get_deals_of_the_day(link)
+        link = "https://www.amazon.com/s?k=college+products&i=electronics&page=" + str(i) + "&qid=1627341635&ref=sr_pg_" + str(i)
+        asin_list = search_amazon(link)
         r = requests.get('https://groundhog.letspondr.com/asins')
         old_asin_list = json.loads(r.text)
         print(old_asin_list['IDs'])
