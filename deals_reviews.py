@@ -84,9 +84,30 @@ def get_proxies():  # getting proxies by scrapping the site for free
 
     r = requests.get(
         'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=US')
-    json_ip = json.loads(r.text)['data']
+    us_json_ip = json.loads(r.text)['data']
 
-    for data in json_ip:
+    for data in us_json_ip:
+        proxies.add((data['ip']))
+
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=AU')
+    au_json_ip = json.loads(r.text)['data']
+
+    for data in au_json_ip:
+        proxies.add((data['ip']))
+
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=CA')
+    ca_json_ip = json.loads(r.text)['data']
+
+    for data in ca_json_ip:
+        proxies.add((data['ip']))
+
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=FR')
+    fr_json_ip = json.loads(r.text)['data']
+
+    for data in fr_json_ip:
         proxies.add((data['ip']))
 
     return proxies
@@ -124,7 +145,8 @@ def find_ip(lower_range, upper_range, thread_id):
 
 def scrape(url2, ip_index, thread_number, thread_id):
     #  print("This is the page percentage!!!!!!!!!!!!" + str(thread_variables[thread_id]['page_percentage']))
-    if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1500:  # change for more or less page percentage
+    if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id][
+        'time_started'] + 1500:  # change for more or less page percentage
         return None
     else:
         # Create an Extractor by reading from the YAML file
@@ -163,7 +185,8 @@ def scrape(url2, ip_index, thread_number, thread_id):
                                                "https": thread_variables[thread_id]['working_ip'][randint]}, timeout=45)
                 break
             except:
-                if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1500:  # change for more or less page percentage
+                if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id][
+                    'time_started'] + 1500:  # change for more or less page percentage
                     break
                 sleep_time = 5
                 print("Connection refused by the server..")
@@ -174,15 +197,16 @@ def scrape(url2, ip_index, thread_number, thread_id):
                 stop_count = stop_count + 1
                 print("stop count " + str(stop_count))
                 if stop_count > 3:
-                    randint = random.randint(0, len(
-                        thread_variables[thread_id]['working_ip']) - 1)  # try to assign this to the global ip array
+                    print('length of working_ip ' + str(len(thread_variables[thread_id]['working_ip'])))
+                    randint = random.randint(0, len(thread_variables[thread_id]['working_ip']) - 1)
                     print('scraping reviews, too many randints assigned new ip')
                     thread_variables[thread_id]['old_randints'][thread_number - 1] = randint
                     # print('to many stops, reassigning randint')
                     stop_count = 0
                 continue
         # Simple check to check if page was blocked (Usually 503)
-        if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id]['time_started'] + 1500:  # change for more or less page percentage
+        if thread_variables[thread_id]['page_percentage'] >= 90 or time.time() > thread_variables[thread_id][
+            'time_started'] + 1500:  # change for more or less page percentage or time
             return None
         print(str(r.status_code))
         return e.extract(r.text)
@@ -377,11 +401,12 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
         thread_variables = {
             10000: {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [], 'product_page_dict': [],
                     'all_pages': 0, 'old_randints': [None], 'total_pages_scrapped': 0, 'page_percentage': 0,
-                    'driver': webdriver, 'time': 0}}
+                    'driver': webdriver, 'time_started': 0, 'proxy_length': 0}}
 
     thread_variables[thread_id] = {'csv_outfile': [], 'txt_outfile': [], 'working_ip': [], 'proxy_pool': [],
                                    'product_page_dict': [], 'all_pages': 0, 'old_randints': [None],
-                                   'total_pages_scrapped': 0, 'page_percentage': 0, 'driver': webdriver, 'time_started': 0}
+                                   'total_pages_scrapped': 0, 'page_percentage': 0, 'driver': webdriver,
+                                   'time_started': 0, 'proxy_length': 0}
 
     thread_variables[thread_id]['time_started'] = time.time()
 
@@ -389,13 +414,14 @@ def run_deals_scrapping(asin_to_scrape, thread_id):
 
     proxies = get_proxies()
     thread_variables[thread_id]['proxy_pool'] = cycle(proxies)
+    thread_variables[thread_id]['proxy_length'] = len(proxies)
     print('Finding viable ip address for proxy...')
 
     ip_threads = []  # lists of threads to join
     high_i = 2
     low_i = 1
 
-    while low_i < 126:  # change number here for num ips checked
+    while low_i < thread_variables[thread_id]['proxy_length'] + 1:  # change number here for num ips checked
         ip_thread = Thread(target=find_ip, args=(low_i, high_i, thread_id))
         ip_threads.append(ip_thread)
         ip_thread.start()
@@ -490,7 +516,7 @@ def collect_data(lower_page, higher_page, all_pages, thread_number, scrape_url, 
                         ip_threads = []  # lists of threads to join
                         high_i = 2
                         low_i = 1
-                        while low_i < 126:  # change number here for num ips checked
+                        while low_i < thread_variables[thread_id]['proxy_length'] + 1:  # change number here for num ips checked
                             ip_thread = Thread(target=find_ip, args=(low_i, high_i, thread_id))
                             ip_threads.append(ip_thread)
                             ip_thread.start()

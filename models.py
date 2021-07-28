@@ -370,10 +370,16 @@ def run_models(raw_review_data, gpt3_data, company_id, product_id, id, price, pr
         for entry in json_to_upload:
             writer.write(entry)
 
-    upload = openai.File.create(
-        file=open("upload.jsonl"),
-        purpose='answers'
-    )
+    upload = {}
+    upload['id'] = ""
+    while len(upload['id']) < 5:
+        try:
+            upload = openai.File.create(
+                file=open("upload.jsonl"),
+                purpose='answers'
+            )
+        except:
+            upload['id'] = ""
 
     print(upload['id'])
 

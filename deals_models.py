@@ -246,6 +246,7 @@ def run_deals(raw_review_data, gpt3_data, id_num, price, product_images, short_d
             upload['id'] = ""
 
     print(upload['id'])
+
     max_index = whole_review_sentiment.index(max(whole_review_sentiment))  # calculated max index for max review
     min_index = whole_review_sentiment.index(min(whole_review_sentiment))  # does the same as above but for min review
 

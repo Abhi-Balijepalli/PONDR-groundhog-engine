@@ -2,6 +2,7 @@ import random
 import re
 import sys
 import time
+import json
 from collections import OrderedDict
 from itertools import cycle
 from threading import Thread
@@ -90,6 +91,35 @@ def get_proxies():  # getting proxies by scrapping the site for free
         if i.xpath('.//td[7][contains(text(),"yes")]'):
             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
             proxies.add(proxy)
+
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=US')
+    us_json_ip = json.loads(r.text)['data']
+
+    for data in us_json_ip:
+        proxies.add((data['ip']))
+
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=AU')
+    au_json_ip = json.loads(r.text)['data']
+
+    for data in au_json_ip:
+        proxies.add((data['ip']))
+
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=CA')
+    ca_json_ip = json.loads(r.text)['data']
+
+    for data in ca_json_ip:
+        proxies.add((data['ip']))
+
+    r = requests.get(
+        'https://proxylist.geonode.com/api/proxy-list?limit=50&page=1&sort_by=lastChecked&sort_type=desc&country=FR')
+    fr_json_ip = json.loads(r.text)['data']
+
+    for data in fr_json_ip:
+        proxies.add((data['ip']))
+
     return proxies
 
 
@@ -203,41 +233,55 @@ def get_product_page(front_url):
         try:
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--proxy-server=%s' % PROXY)
-            driver = webdriver.Chrome(chrome_options=chrome_options,
-                                      executable_path="/usr/lib/chromium-browser/chromedriver")
+            driver = webdriver.Chrome(chrome_options=chrome_options)
 
             print('starting download...')
             url = front_url
             driver.get(url)
-            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
+            WebDriverWait(driver, 45).until(EC.visibility_of_element_located((By.XPATH, '//span[@id="productTitle"]')))
             try:
                 name = driver.find_element_by_xpath('//span[@id="productTitle"]')
                 product_info['name'] = name.text.strip()
             except:
                 product_info['name'] = 0
             try:
-                price = driver.find_element_by_xpath("(//span[contains(@class,'a-color-price')])[1]")
+                price = driver.find_element_by_xpath(
+                    "(//span[contains(@class,'a-color-price')])[1]")
                 product_info['price'] = price.text
             except:
                 product_info['price'] = 0
+
+            def category():
+                for a in range(1, 10):
+                    for b in range(1, 10):
+                        for c in range(1, 10):
+                            try:
+                                category = driver.find_element_by_xpath(
+                                    "/html/body/div[" + str(a) + "]/div[" + str(b) + "]/div[" + str(
+                                        c) + "]/div/div/ul/li[1]/span/a")
+                                product_info['category'] = category.text.strip()
+                                return
+                            except:
+                                product_info['category'] = 0
+
+            category()
+
             try:
-                category = driver.find_element_by_xpath("(//span[@class='a-list-item']/a)[last()]")
-                product_info['category'] = category.text.strip()
-            except:
-                product_info['category'] = 0
-            try:
-                feature_bullets = driver.find_element_by_xpath('//*[@id="feature-bullets"]')
+                feature_bullets = driver.find_element_by_xpath(
+                    '//*[@id="feature-bullets"]')
                 product_info['feature_bullets'] = feature_bullets.text
             except:
                 product_info['feature_bullets'] = 0
             try:
                 high_res_image = []
-                images = [my_elem.get_attribute("src") for my_elem in WebDriverWait(driver, 20).until(
-                    EC.visibility_of_all_elements_located(
-                        (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
+                images = [my_elem.get_attribute("src") for my_elem in
+                          WebDriverWait(driver, 20).until(
+                              EC.visibility_of_all_elements_located(
+                                  (By.XPATH, "//div[@id='altImages']/ul//li[@data-ux-click]//img")))]
                 for image in images:
                     search_string = re.search('/I/(.+?)._', image)
-                    high_res_image.append('https://m.media-amazon.com/images/I/' + search_string.group(1) + '._SL1500_.jpg')
+                    high_res_image.append(
+                        'https://m.media-amazon.com/images/I/' + search_string.group(1) + '._SL1500_.jpg')
                 product_info['images'] = high_res_image
             except:
                 product_info['images'] = 0

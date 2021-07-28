@@ -26,7 +26,7 @@ if __name__ == "__main__":
     type = input('type ')
 
     for i in range(first_page, last_page + 1):
-        link = "https://www.amazon.com/s?k=college+products&i=electronics&page=" + str(i) + "&qid=1627341635&ref=sr_pg_" + str(i)
+        link = "https://www.amazon.com/s?k=college+dorm+decor&page=" + str(i) + "&qid=1627341635&ref=sr_pg_" + str(i)
         asin_list = search_amazon(link)
         r = requests.get('https://groundhog.letspondr.com/asins')
         old_asin_list = json.loads(r.text)
