@@ -403,6 +403,7 @@ def run_scrapping(url_to_scrape):
     global all_pages
     global page_percentage
     global total_pages_scrapped
+    global proxy_length
     total_pages_scrapped = 0
     page_percentage = 0
     scrape_url = url_to_scrape
@@ -420,13 +421,14 @@ def run_scrapping(url_to_scrape):
 
     proxies = get_proxies()
     proxy_pool = cycle(proxies)
+    proxy_length = len(proxies)
     print('Finding viable ip address for proxy...')
 
     ip_threads = []  # lists of threads to join
     high_i = 2
     low_i = 1
 
-    while low_i < 76:  # change number here for num ips checked
+    while low_i < proxy_length + 1:  # change number here for num ips checked
         ip_thread = Thread(target=find_ip, args=(low_i, high_i))
         ip_threads.append(ip_thread)
         ip_thread.start()
@@ -507,7 +509,7 @@ def collect_data(lower_page, higher_page, all_pages, thread_number):
                         ip_threads = []  # lists of threads to join
                         high_i = 2
                         low_i = 1
-                        while low_i < 76:  # change number here for num ips checked
+                        while low_i < proxy_length + 1:  # change number here for num ips checked
                             ip_thread = Thread(target=find_ip, args=(low_i, high_i))
                             ip_threads.append(ip_thread)
                             ip_thread.start()

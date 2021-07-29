@@ -10,14 +10,12 @@ import time
 
 
 def do_everything(id, asin, type):
-    review_data, gpt3_data, price, product_images, short_description, long_description, category = run_deals_scrapping(
-        asin, id)
+    review_data, gpt3_data, price, product_images, short_description, long_description, category = run_deals_scrapping(asin, id)
     if review_data is None:
         print("No reviews, skipped")
         sys.exit()
 
-    run_deals(review_data, gpt3_data, id, price, product_images, short_description, long_description, category, asin,
-              type)
+    run_deals(review_data, gpt3_data, id, price, product_images, short_description, long_description, category, asin, type)
 
 
 if __name__ == "__main__":

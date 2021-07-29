@@ -4,9 +4,6 @@
     <list default="true" id="bbf55525-ca78-4d76-a125-3a7b65c68d9f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deals.py" beforeDir="false" afterPath="$PROJECT_DIR$/deals.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deals_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/deals_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deals_reviews.py" beforeDir="false" afterPath="$PROJECT_DIR$/deals_reviews.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reviews.py" beforeDir="false" afterPath="$PROJECT_DIR$/reviews.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -43,7 +40,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/main.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python.deals">
     <configuration name="api" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Analysis" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -158,8 +155,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main" />
         <item itemvalue="Python.deals" />
+        <item itemvalue="Python.main" />
         <item itemvalue="Python.deals_get" />
         <item itemvalue="Python.api" />
         <item itemvalue="Python.reviews" />
