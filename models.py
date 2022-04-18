@@ -18,7 +18,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from api import send_data
 # import text2emotion as te
 
-openai.api_key = ("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")
+openai.api_key = ("")
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 today = date.today()
 
